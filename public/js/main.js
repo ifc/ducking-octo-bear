@@ -38,7 +38,7 @@ $(function() {
 
     var x = position.coords.latitude,
         y = position.coords.longitude;
-    console.log(x, y);
+    alert(x + " " + y);
 
     $('#stage').html(x + " " + y);
 
