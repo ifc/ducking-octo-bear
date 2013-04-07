@@ -426,43 +426,131 @@ $ ->
         view.makeUnselectable()
 
   App.Model.User = Backbone.Model.extend
+
+    drive: (destination) ->
+      ret = 0
+      curLocation = @get('location')
+
+      if destination in curLocation.get('connections')
+        @set('location', destination)
+      else
+        alert("Driving to an unconnected city?")
+        ret = -1
+
+      return ret
+
+    directFlight: (destination) ->
+      ret = -1
+
+      myCards = @get('cards')
+      for card in myCards
+        if card.get('name') == destination.get('name')
+          myCards.remove(card)
+          App.playerDiscard.shift(card)
+          @set('location', destination)
+          ret = 0
+          break
+
+      if ret == -1
+        alert("Trying to direct flight to a place you don't have a card to?")
+
+      return ret
+
+    charterFlight: (destination) ->
+      ret = -1
+      curLocation = @get('location')
+
+      myCards = @get('cards')
+      for card in myCards
+        if card.get('name') == curLocation.get('name')
+          myCards.remove(card)
+          App.playerDiscard.shift(card)
+          @set('location', destination)
+          ret = 0
+          break
+
+      if ret == -1
+        alert("Trying to charter flight when you don't have your current locations card?")
+
+      return ret
+
+    shuttleFlight: (destination) ->
+      ret = 0
+      curLocation = @get('location')
+
+      if curLocation.hasResearchCenter() and destination.hasResearchCenter()
+        @set('location', destination)
+      else
+        ret = -1
+        alert("Can't shuttle flight between places without research centers")
+
+      return ret
+
+    # Researcher role complete.
+    buildResearchCenter: ->
+      ret = 0
+      curLocation = @get('location')
+
+      if not curLocation.hasResearchCenter()
+        if @get('role') == 'researcher'
+          curLocation.buildResearchCenter()
+        else
+          builtRc = false
+          myCards = @get('cards')
+          for card in myCards
+            if card.get('name') == curLocation.get('name')
+              builtRc = true
+              curLocation.buildResearchCenter()
+              break
+          if not builtRc
+            alert("Can't build research center unless you have the card where you are located")
+      else
+        alert("Building research center at place that already has one?")
+        ret = -1
+
+      return ret
+
+
+    # TODO: if eradicated -> then all.
+    treatDisease: ->
+      ret = 0
+      curLocation = @get('location')
+
+      if curLocation.get('diseaseCubes') > 0
+        if @get('role') == 'medic'
+          curLocation.treat(3)
+        else
+          curLocation.treat(1)
+      else
+        alert("Treating a city with no disease?")
+        ret = -1
+
+      return ret
+
+
     # Will return 0 if action was performed. If not zero, couldn't take action. @@@
     # - TODO: bake in player roles.
     takeAction: (actionId, options) ->
       ret = 0
-      curLocation = @get('localhost')
 
       if actionId == DRIVE
-        destination = options['destination']
-        if destination in curLocation.get('connections')
-          @set('location', destination)
-        else
-          alert("Driving to an unconnected city?")
-          ret = -1
+        ret = @drive(options['destination'])
       else if actionId == DIRECT_FLIGHT
-        # TODO
+        ret = @directFlight(options['destination'])
       else if actionId == CHARTER_FLIGHT
-        # TODO
+        ret = @charterFlight(options['destination'])
       else if actionId == SHUTTLE_FLIGHT
-        # TODO
+        ret = @shuttleFlight(options['destination'])
       else if actionId == PASS
         ret = 0
       else if actionId == DISPATCH
         # TODO
       else if actionId == BUILD_RESEARCH_CENTER
-        if not curLocation.hasResearchCenter()
-          curLocation.buildResearchCenter()
-        else
-          alert("Building research center at place that already has one?")
-          ret = -1
+        ret = @buildResearchCenter()
       else if actionId == DISCOVER_CURE
         # TODO
       else if actionId == TREAT_DISEASE
-        if curLocation.get('diseaseCubes') > 0
-          curLocation.treat(1)
-        else
-          alert("Treating a city with no disease?")
-          ret = -1
+        ret = @treatDisease()
       else if actionId == SHARE_KNOWLEDGE
         # TODO
       else

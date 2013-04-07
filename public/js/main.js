@@ -482,45 +482,141 @@ $(function() {
     }
   });
   App.Model.User = Backbone.Model.extend({
-    takeAction: function(actionId, options) {
-      var curLocation, destination, ret;
+    drive: function(destination) {
+      var curLocation, ret;
 
       ret = 0;
-      curLocation = this.get('localhost');
-      if (actionId === DRIVE) {
-        destination = options['destination'];
-        if (__indexOf.call(curLocation.get('connections'), destination) >= 0) {
+      curLocation = this.get('location');
+      if (__indexOf.call(curLocation.get('connections'), destination) >= 0) {
+        this.set('location', destination);
+      } else {
+        alert("Driving to an unconnected city?");
+        ret = -1;
+      }
+      return ret;
+    },
+    directFlight: function(destination) {
+      var card, myCards, ret, _i, _len;
+
+      ret = -1;
+      myCards = this.get('cards');
+      for (_i = 0, _len = myCards.length; _i < _len; _i++) {
+        card = myCards[_i];
+        if (card.get('name') === destination.get('name')) {
+          myCards.remove(card);
+          App.playerDiscard.shift(card);
           this.set('location', destination);
-        } else {
-          alert("Driving to an unconnected city?");
-          ret = -1;
+          ret = 0;
+          break;
         }
+      }
+      if (ret === -1) {
+        alert("Trying to direct flight to a place you don't have a card to?");
+      }
+      return ret;
+    },
+    charterFlight: function(destination) {
+      var card, curLocation, myCards, ret, _i, _len;
+
+      ret = -1;
+      curLocation = this.get('location');
+      myCards = this.get('cards');
+      for (_i = 0, _len = myCards.length; _i < _len; _i++) {
+        card = myCards[_i];
+        if (card.get('name') === curLocation.get('name')) {
+          myCards.remove(card);
+          App.playerDiscard.shift(card);
+          this.set('location', destination);
+          ret = 0;
+          break;
+        }
+      }
+      if (ret === -1) {
+        alert("Trying to charter flight when you don't have your current locations card?");
+      }
+      return ret;
+    },
+    shuttleFlight: function(destination) {
+      var curLocation, ret;
+
+      ret = 0;
+      curLocation = this.get('location');
+      if (curLocation.hasResearchCenter() && destination.hasResearchCenter()) {
+        this.set('location', destination);
+      } else {
+        ret = -1;
+        alert("Can't shuttle flight between places without research centers");
+      }
+      return ret;
+    },
+    buildResearchCenter: function() {
+      var builtRc, card, curLocation, myCards, ret, _i, _len;
+
+      ret = 0;
+      curLocation = this.get('location');
+      if (!curLocation.hasResearchCenter()) {
+        if (this.get('role') === 'researcher') {
+          curLocation.buildResearchCenter();
+        } else {
+          builtRc = false;
+          myCards = this.get('cards');
+          for (_i = 0, _len = myCards.length; _i < _len; _i++) {
+            card = myCards[_i];
+            if (card.get('name') === curLocation.get('name')) {
+              builtRc = true;
+              curLocation.buildResearchCenter();
+              break;
+            }
+          }
+          if (!builtRc) {
+            alert("Can't build research center unless you have the card where you are located");
+          }
+        }
+      } else {
+        alert("Building research center at place that already has one?");
+        ret = -1;
+      }
+      return ret;
+    },
+    treatDisease: function() {
+      var curLocation, ret;
+
+      ret = 0;
+      curLocation = this.get('location');
+      if (curLocation.get('diseaseCubes') > 0) {
+        if (this.get('role') === 'medic') {
+          curLocation.treat(3);
+        } else {
+          curLocation.treat(1);
+        }
+      } else {
+        alert("Treating a city with no disease?");
+        ret = -1;
+      }
+      return ret;
+    },
+    takeAction: function(actionId, options) {
+      var ret;
+
+      ret = 0;
+      if (actionId === DRIVE) {
+        ret = this.drive(options['destination']);
       } else if (actionId === DIRECT_FLIGHT) {
-
+        ret = this.directFlight(options['destination']);
       } else if (actionId === CHARTER_FLIGHT) {
-
+        ret = this.charterFlight(options['destination']);
       } else if (actionId === SHUTTLE_FLIGHT) {
-
+        ret = this.shuttleFlight(options['destination']);
       } else if (actionId === PASS) {
         ret = 0;
       } else if (actionId === DISPATCH) {
 
       } else if (actionId === BUILD_RESEARCH_CENTER) {
-        if (!curLocation.hasResearchCenter()) {
-          curLocation.buildResearchCenter();
-        } else {
-          alert("Building research center at place that already has one?");
-          ret = -1;
-        }
+        ret = this.buildResearchCenter();
       } else if (actionId === DISCOVER_CURE) {
 
       } else if (actionId === TREAT_DISEASE) {
-        if (curLocation.get('diseaseCubes') > 0) {
-          curLocation.treat(1);
-        } else {
-          alert("Treating a city with no disease?");
-          ret = -1;
-        }
+        ret = this.treatDisease();
       } else if (actionId === SHARE_KNOWLEDGE) {
 
       } else {
