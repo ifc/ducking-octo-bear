@@ -20,6 +20,12 @@
 
     bootstrap: (data) ->
       log data
+
+      $('#right-panel-toggle').click (e) ->
+        console.log 'Toggling panel'
+        $(e.currentTarget).toggleClass('red')
+        .toggle()
+
       return if App.started
 
       # World creates a basic graph from

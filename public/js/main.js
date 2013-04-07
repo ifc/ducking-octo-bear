@@ -1,5 +1,5 @@
 $(function() {
-  var App, BLACK, BLUE, BUILD_RESEARCH_CENTER, CHARTER_FLIGHT, Card, CardView, City, CityCollection, CityView, DIRECT_FLIGHT, DISCOVER_CURE, DISPATCH, DRIVE, PASS, RED, REGIONS, RightPanel, SHARE_KNOWLEDGE, SHUTTLE_FLIGHT, TREAT_DISEASE, World, YELLOW, createLine, curedDiseases, currentTurn, infection, infectionRate, infectionRate2numCards, locationId2Cube, log, numOutbreaks, numPlayers, player2SpecialAction, playerBasicActions, playerLocations, playerRoles, playerSpecialActions, researchCenter;
+  var App, Card, CardView, City, CityView, REGIONS, RightPanel, World, createLine, curedDiseases, currentTurn, infection, infectionRate, infectionRate2numCards, locationId2Cube, log, numOutbreaks, numPlayers, player2SpecialAction, playerBasicActions, playerLocations, playerRoles, playerSpecialActions, researchCenter, world;
 
   window.Game = this;
   log = console.log;
@@ -38,21 +38,7 @@ $(function() {
       description: "You may build a Research Station in your current city for one action.\nOnce per turn at a research station you may spend an action and discard any city card to move to any city"
     }
   };
-  curedDiseases = [];
-  RED = 1;
-  BLUE = 2;
-  YELLOW = 3;
-  BLACK = 4;
-  DRIVE = 1;
-  DIRECT_FLIGHT = 2;
-  CHARTER_FLIGHT = 3;
-  SHUTTLE_FLIGHT = 4;
-  PASS = 5;
-  DISPATCH = 1;
-  BUILD_RESEARCH_CENTER = 2;
-  DISCOVER_CURE = 3;
-  TREAT_DISEASE = 4;
-  SHARE_KNOWLEDGE = 5;
+  curedDiseases = [red, blue];
   infection = {
     location: 1,
     disease: RED
@@ -62,7 +48,7 @@ $(function() {
     disease: BLUE
   };
   playerBasicActions = [DRIVE, DIRECT_FLIGHT, CHARTER_FLIGHT, SHUTTLE_FLIGHT, PASS];
-  playerSpecialActions = [DISPATCH, BUILD_RESEARCH_CENTER, DISCOVER_CURE, TREAT_DISEASE, SHARE_KNOWLEDGE];
+  playerSpecialActions = [DISPATCH, BUILD_RESEARCH_CENTER, DISCOVER_CURE, TREATMENT, SHARE_KNOWLEDGE];
   player2SpecialAction = {
     1: DISPATCH,
     2: BUILD_RESEARCH_CENTER,
@@ -237,15 +223,18 @@ $(function() {
       }
     }
   };
+  world = new World({
+    Regions: REGIONS
+  });
   World = Backbone.Model.extend({
     initialize: function(options) {
       return initGraph();
     },
     initGraph: function() {
-      this.Cities = {};
+      this._internal = {};
       return _.each(this.Regions, function(Region) {
         return _.each(Region, function(City, name) {
-          this.Cities[name] = City;
+          this._internal[name] = City;
           return City.initConnections();
         });
       });
@@ -275,11 +264,7 @@ $(function() {
       return this.set("diseaseCubes", 0);
     },
     initConnections: function() {
-      var connections;
-
-      return connections = _.map(this.get("connections"), function(name) {
-        return App.World.Cities[name];
-      });
+      return _.each(this.get("connections"), function() {});
     },
     infect: function() {
       this.addDiseaseCubes(1);
@@ -292,9 +277,6 @@ $(function() {
     addDiseaseCubes: function(num) {
       return this.set("diseaseCubes", this.get("diseaseCubes") + num);
     }
-  });
-  CityCollection = Backbone.Model.extend({
-    model: City
   });
   CityView = Backbone.View.extend({
     tagName: "div",
@@ -314,27 +296,18 @@ $(function() {
   });
   RightPanel = Backbone.View.extend({
     el: '#right-panel',
-    __body_template: "<ul class=\"actions\">\n\n</ul>",
+    __template: "",
     template: function(c) {
-      return Mustache.render(this.__body_template, c);
-    },
-    events: {
-      'click #right-panel-toggle': 'toggle'
-    },
-    toggle: function() {
-      return this.$('#right-panel-body').toggleClass('red').toggle();
+      return Mustache.render(this.__template, c);
     },
     context: function() {
       return this.model.toJSON();
     },
-    initialize: function() {
-      return console.log('Initializing Right Panel');
-    },
     render: function() {
-      return this.$('#right-panel-body').html(this.template(_.result(this, 'context')));
+      return this.$el.html(this.template(_.result(this, 'context')));
     }
   });
-  App = {
+  return App = {
     init: function(cb) {
       if (navigator.geolocation) {
         return navigator.geolocation.watchPosition(cb, this.error);
@@ -344,37 +317,6 @@ $(function() {
     },
     error: function(msg) {
       return log(msg);
-    },
-    bootstrap: function(data) {
-      var right_panel;
-
-      log(data);
-      if (App.started) {
-        return;
-      }
-      App.World = new World({
-        Regions: REGIONS
-      });
-      return right_panel = new RightPanel({
-        model: World
-      });
-    },
-    playTurn: function(data) {}
-  };
-  return App.init(function(position) {
-    var socket;
-
-    if ($("#status").hasClass("success")) {
-      return;
     }
-    socket = io.connect("http://localhost:3000");
-    App.Socket = socket;
-    socket.on("boostrap", function(data) {
-      App.bootstrap(data);
-      return App.started = true;
-    });
-    return socket.on("message", function(data) {
-      return App.playTurn(data);
-    });
-  });
+  };
 });

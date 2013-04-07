@@ -54,7 +54,7 @@ $ ->
       """
 
 
-  curedDiseases = [red, blue]
+  curedDiseases = []
   infection =
     location: 1
     disease: RED
@@ -313,10 +313,6 @@ $ ->
 
     """
     template: (c) -> Mustache.render @__template, c
-    events:
-      'click #right-panel-button': 'toggle'
-    toggle: ->
-      @$('#right-panel-body').toggleClass('red').toggle()
     context: ->
       @model.toJSON()
     render: ->
