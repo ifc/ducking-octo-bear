@@ -503,7 +503,6 @@ $(function() {
       return delete this['connections'];
     },
     infect: function(numCubes) {
-      console.log(this.get('name') + "  --- " + numCubes);
       this.addDiseaseCubes(numCubes);
       if (this.get("diseaseCubes") > 3) {
         this.set("diseaseCubes", 3);
@@ -539,7 +538,7 @@ $(function() {
   });
   App.View.RightPanel = Backbone.View.extend({
     el: '#right-panel',
-    __template: "<h1>",
+    __template: "<ul class=\"actions\">\n  <li class=\"label\"><h4>Movement</h4></li>\n  <li class=\"action first\" data-action=\"DRIVE\">Drive</li>\n  <li class=\"action\" data-action=\"DIRECT_FLIGHT\">Direct Flight</li>\n  <li class=\"action\" data-action=\"CHARTER_FLIGHT\">Charter Flight</li>\n  <li class=\"action\" data-action=\"SHUTTLE_FLIGHT\">Shuttle Flight</li>\n  <li class=\"action\" data-action=\"PASS\">Pass</li>\n  <li class=\"label\"><h4>Special Actions</h4></li>\n  <li class=\"action first\" data-action=\"DISPATCH\">Dispatch</li>\n  <li class=\"action\" data-action=\"BUILD_RESEARCH_CENTER\">Build Research Center</li>\n  <li class=\"action\" data-action=\"DISCOVER_CURE\">Discover Cure</li>\n  <li class=\"action\" data-action=\"TREAT_DISEASE\">Treat Disease</li>\n  <li class=\"action\" data-action=\"SHARE_KNOWLEDGE\">Share Knowledge</li>\n</ul>",
     template: function(c) {
       return Mustache.render(this.__template, c);
     },
@@ -564,7 +563,11 @@ $(function() {
       App.World = new App.Model.World({
         Regions: REGIONS
       });
-      return App.World.initGraph();
+      App.World.initGraph();
+      App.RightPanel = new App.View.RightPanel({
+        model: App.World
+      });
+      return App.RightPanel.render();
     },
     error: function(msg) {
       return log(msg);
@@ -608,7 +611,6 @@ $(function() {
     _results = [];
     for (cityName in _ref) {
       numInfections = _ref[cityName];
-      console.log(cityName + " " + numInfections);
       _results.push(App.World.Cities[cityName].infect(numInfections));
     }
     return _results;
