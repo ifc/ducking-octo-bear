@@ -502,11 +502,13 @@ $(function() {
       this.set("connections", connections);
       return delete this['connections'];
     },
-    infect: function() {
-      this.addDiseaseCubes(1);
+    infect: function(numCubes) {
+      console.log(this.get('name') + "  --- " + numCubes);
+      this.addDiseaseCubes(numCubes);
       if (this.get("diseaseCubes") > 3) {
+        this.set("diseaseCubes", 3);
         return _.each(this.get("connections"), function() {
-          return connections.infect();
+          return connections.infect(1);
         });
       }
     },
@@ -568,16 +570,11 @@ $(function() {
       return log(msg);
     },
     bootstrap: function(data) {
-      var right_panel;
-
-      log(data);
+      console.log(data);
       console.log('here');
       if (App.started) {
         return;
       }
-      right_panel = new RightPanel({
-        model: App.World
-      });
       return initLogic(data);
     },
     playTurn: function(data) {
@@ -593,7 +590,7 @@ $(function() {
     App.succeeded = true;
     socket = io.connect("http://localhost:3000");
     App.Socket = socket;
-    socket.on("boostrap", function(data) {
+    socket.on("bootstrap", function(data) {
       App.bootstrap(data);
       return App.started = true;
     });
@@ -601,6 +598,20 @@ $(function() {
       return App.playTurn(data);
     });
   });
-  initLogic = function(data) {};
+  initLogic = function(data) {
+    var cityName, numInfections, _ref, _results;
+
+    console.log("HERE WE ARE IN INIT LOGIC");
+    console.log(data);
+    App = window.App;
+    _ref = data['infections'];
+    _results = [];
+    for (cityName in _ref) {
+      numInfections = _ref[cityName];
+      console.log(cityName + " " + numInfections);
+      _results.push(App.World.Cities[cityName].infect(numInfections));
+    }
+    return _results;
+  };
   return playTurn = function(data) {};
 });

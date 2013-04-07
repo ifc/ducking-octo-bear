@@ -458,11 +458,12 @@ $ ->
       @set "connections", connections
       delete this['connections']
 
-    infect: ->
-      @addDiseaseCubes 1
+    infect: (numCubes) ->
+      @addDiseaseCubes(numCubes)
       if @get("diseaseCubes") > 3
+        @set("diseaseCubes", 3)
         _.each @get("connections"), ->
-          connections.infect()
+          connections.infect(1)
 
     addDiseaseCubes: (num) ->
       @set "diseaseCubes", @get("diseaseCubes") + num
@@ -530,14 +531,14 @@ $ ->
     ###############################
 
     bootstrap: (data) ->
-      log data
-      console.log 'here'
+      console.log(data)
+      console.log('here')
 
       return if App.started
 
       # UI Shit
-      right_panel = new RightPanel
-        model: App.World
+      #right_panel = new RightPanel
+      #  model: App.World
 
       initLogic(data)
 
@@ -561,7 +562,7 @@ $ ->
     socket = io.connect("http://localhost:3000")
     App.Socket = socket
 
-    socket.on "boostrap", (data) ->
+    socket.on "bootstrap", (data) ->
       App.bootstrap(data)
       App.started = true
 
@@ -569,6 +570,16 @@ $ ->
       App.playTurn(data)
 
   initLogic = (data) ->
+    # Create the deck, etc.
+    console.log("HERE WE ARE IN INIT LOGIC")
+    console.log(data)
+    App = window.App
+
+    # Infect the initiali cities.
+    for cityName, numInfections of data['infections']
+      #console.log(cityName + " " + numInfections)
+      App.World.Cities[cityName].infect(numInfections)
+
 
   playTurn = (data) ->
 
