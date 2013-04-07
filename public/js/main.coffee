@@ -420,9 +420,10 @@ $ ->
         view.setPosition()
         @CityViews.push(view)
     makeNodesSelectable: ->
+      console.log "World nodes made selectable"
       _.each @CityViews, (view) ->
         view.makeSelectable()
-    makeUnselectable: ->
+    makeNodesUnselectable: ->
       _.each @CityViews, (view) ->
         view.makeUnselectable()
 
@@ -670,6 +671,10 @@ $ ->
       <div class="sphere {{color}}"></div>
     """
     template: (c) -> Mustache.render @__template, c
+    initialize: ->
+      _.bindAll this, 'onClick'
+    events:
+      'click': 'onClick'
     render: ->
       @$el.html @template _.result this, 'context'
       return this
@@ -683,9 +688,35 @@ $ ->
     makeUnselectable: ->
       @selectable = false
       @$el.removeClass('selectable')
+    onClick: (e) ->
+      return if not @selectable
+      Backbone.trigger 'city:selected', @model.name
 
   App.Collection.City = Backbone.Collection.extend
     model: App.Model.City
+
+  App.View.PlayersPanel = Backbone.View.extend
+    el: '#player-panel'
+    __template: """
+      <ul class="players">
+        {{#players}}
+        <li class="player" data-id="{{id}}">{{name}}</li>
+        {{/players}}
+    """
+    events:
+      'click .player': 'playerClicked'
+      'click .submit': 'submitted'
+    template: (c) -> Mustache.render @__template, c
+    render: ->
+      @$el.html @template @collection.toJSON()
+    playerClicked: (e) ->
+      id = parseInt $(e.currentTarget).data('id')
+      $(e.currentTarget).toggleClass('active')
+      @playerSelected = id
+    submitted: (e) ->
+      $('.player').removeClass('active')
+      Backbone.trigger 'player:selected', @playerSelected
+      @playerSelected = null
 
   App.View.RightPanel = Backbone.View.extend
     el: '#right-panel'
@@ -712,18 +743,74 @@ $ ->
     render: ->
       @$el.html @template _.result this, 'context'
     takeAction: (e) ->
+      @$('.action').removeClass('active')
+      $(e.currentTarget).toggleClass('active')
       id = parseInt $(e.currentTarget).data('action'), 10
+      console.log "Taking action #{id}"
       Backbone.trigger 'rightPanel:actionTaken', id
 
   App.View.ActionListener = Backbone.View.extend
+    BackboneEvents:
+      'rightPanel:actionTaken': 'rightPanelAction'
+      'city:selected': 'citySelected'
+      'card:selected': 'cardSelected'
+      'city:deselected': 'cityDeselected'
+      'card:deselected': 'cardDeselected'
+      'player:selected': 'playerSelected'
+      'player:deselected': 'playerDeselected'
     initialize: ->
       _.bindAll(this)
-      Backbone.on 'rightPanel:actionTaken', @rightPanelAction
+      _.each @BackboneEvents, (fnname, event) =>
+        Backbone.on event, @[fnname]
+      @citiesSelected = []
+      @cardsSelected = []
+      @userSelected = []
 
     rightPanelAction: (id) ->
+      console.log "Right panel took action #{id}"
       if DRIVE <= id <= SHUTTLE_FLIGHT
         App.World.makeNodesSelectable()
-      # if
+      else
+        App.World.makeNodesUnselectable()
+
+    citySelected: (name) ->
+      @citiesSelected.push App.World.Cities[name]
+
+    cityDeselected: (name) ->
+      spliceOutIndex = -1
+      for i, city in @citiesSelected
+        if city.get('name') == name
+          @citiesSelected.splice(i, 1)
+          break
+
+    cardsSelected: (name) ->
+      @cardsSelected.push App.Cards[name]
+
+    cardsDeselected: (name) ->
+      for i, card in @cardsSelected
+        if card.get('name') == name
+          @cardsSelected.splice(i, 1)
+          break
+
+    clearSelections: (name) ->
+      @citiesSelected = []
+      @cardsSelected = []
+      @userSelected = []
+
+    playerSelected: (name) ->
+      @playerSelected.push App.Players[name]
+
+    playerDeselected: (name) ->
+      for i, card in @cardsSelected
+        if card.get('name') == name
+          @cardsSelected.splice(i, 1)
+          break
+
+    generateDictionary: ->
+      destination: 1
+      cardId: 1
+      traderId: 1
+      discardCardId: 1
 
   #
   # Async bootstrap. App is only global object
@@ -765,13 +852,8 @@ $ ->
     ###############################
 
     bootstrap: (data) ->
-      console.log(data)
-      console.log('here')
-
+      console.log('bootstrapped data =>', data)
       return if App.started
-
-      # UI Shit
-
       initLogic(data)
 
     playTurn: (data) ->
@@ -780,7 +862,19 @@ $ ->
     takeAction: (actionId, options) ->
       return window.App.user.takeAction(actionId, options)
 
+    ################################
 
+    globalStop: ->
+
+    ################################
+
+    playActionCard: (data) ->
+
+    ################################
+
+    endTurn: ->
+      App.ActionListener.clearSelections()
+      App.Socket.emit 'endTurn', {playerId: ''}
 
   ###############
   # Initialize
@@ -805,6 +899,10 @@ $ ->
 
     socket.on "message", (data) ->
       App.playTurn(data)
+
+    socket.on "globalActionPlayed", (data) ->
+      App.globalStop()
+      App.playActionCard(data)
 
   initLogic = (data) ->
     # Create the deck, etc.
@@ -856,7 +954,6 @@ $ ->
 
     console.log("DONE WITH INIT")
     console.log(App)
-
 
   playTurn = (data) ->
 
