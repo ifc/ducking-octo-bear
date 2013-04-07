@@ -14,6 +14,8 @@ $ ->
   # Definitions
   #
   MAX_NUM_CARDS = 7
+  MAX_NUM_RESEACH_CENTERS = 6
+
   log = console.log
   infectionRate2numCards =
     0: 2
@@ -506,6 +508,16 @@ $ ->
       ret = 0
       curLocation = @get('location')
 
+      # Make sure we dont have too many research centers.
+      numResearchCenters = 0
+      for name, city of App.World.Cities
+        if city.hasResearchCenter()
+          numResearchCenters += 1
+
+      if numResearchCenters >= MAX_NUM_RESEACH_CENTERS
+        alert("Already have the max number of research centers!")
+        return -1
+
       if not curLocation.hasResearchCenter()
         if @get('role') == 'ops expert'
           curLocation.buildResearchCenter()
@@ -803,7 +815,7 @@ $ ->
         {{/num_infected}}
       </ul>
       <div class="sphere {{color}}"></div>
-      <div class="research-center active"></div>
+      <div class="research-center {{#researchCenter}}active{{/researchCenter}}"></div>
     """
     template: (c) -> Mustache.render @__template, c
     initialize: ->
@@ -1250,6 +1262,9 @@ $ ->
     console.log("HERE WE ARE IN INIT LOGIC")
     console.log(data)
     App = window.App
+
+    # Put the initial research center in Atlanta.
+    App.World.Cities['Atlanta'].buildResearchCenter()
 
     # Define the user.
     userId = data['clientId']

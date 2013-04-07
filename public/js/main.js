@@ -1,7 +1,7 @@
 var __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
 $(function() {
-  var App, BLUE, BUILD_RESEARCH_CENTER, CHARTER_FLIGHT, DIRECT_FLIGHT, DISCARD, DISCOVER_CURE, DISPATCH, DISPATCHER, DRIVE, MEDIC, OPS_EXPERT, PASS, RED, REGIONS, RESEARCHER, SCIENTIST, SHARE_KNOWLEDGE, SHUTTLE_FLIGHT, TOKEN_COLORS, TOKEN_INDEX, TREAT_DISEASE, createLine, currentTurn, infectionRate2numCards, initLogic, log, numPlayers, playTurn, player2SpecialAction, playerBasicActions, playerRoles, playerSpecialActions;
+  var App, BLUE, BUILD_RESEARCH_CENTER, CHARTER_FLIGHT, DIRECT_FLIGHT, DISCARD, DISCOVER_CURE, DISPATCH, DISPATCHER, DRIVE, MAX_NUM_CARDS, MEDIC, OPS_EXPERT, PASS, RED, REGIONS, RESEARCHER, SCIENTIST, SHARE_KNOWLEDGE, SHUTTLE_FLIGHT, TOKEN_COLORS, TOKEN_INDEX, TREAT_DISEASE, createLine, currentTurn, infectionRate2numCards, initLogic, log, numPlayers, playTurn, player2SpecialAction, playerBasicActions, playerRoles, playerSpecialActions;
 
   window.Game = this;
   App = {
@@ -12,6 +12,7 @@ $(function() {
     Socket: null
   };
   window.App = App;
+  MAX_NUM_CARDS = 7;
   log = console.log;
   infectionRate2numCards = {
     0: 2,
@@ -435,7 +436,7 @@ $(function() {
 
       this.set('curedDiseases', []);
       this.set('eradicatedDiseases', []);
-      this.set('');
+      this.set('infectionRate', 0);
       this.Regions = options.Regions;
       this.Cities = {};
       return _.each(this.Regions, function(Region, Color) {
@@ -726,6 +727,48 @@ $(function() {
         ret = -1;
       }
       return ret;
+    },
+    drawPlayerCards: function() {
+      var bottomCard, card, i, infectionDiscard, numCardsToDraw, playerDeck, _i, _j, _len;
+
+      numCardsToDraw = 2;
+      playerDeck = App.World.get('playerDeck');
+      for (i = _i = 0; _i < 2; i = ++_i) {
+        card = playerDeck.shift();
+        if (card.get('type') === 'epidemic') {
+          Backbone.trigger('epidemic');
+          bottomCard = App.World.get('infectionDeck').pop();
+          App.World.Cities[bottomCard.get('name')].setDiseaseCubes(3);
+          infectionDiscard = App.World.get('infectionDiscard');
+          infectionDiscard.push(bottomCard);
+          infectionDiscard.shuffle();
+          for (_j = 0, _len = infectionDiscard.length; _j < _len; _j++) {
+            card = infectionDiscard[_j];
+            infectionDiscard.remove(card);
+            App.World.get('infectionDeck').unshift(card);
+          }
+        } else {
+          this.get('cards').unshift(card);
+          if (this.get('cards').length > MAX_NUM_CARDS) {
+            Backbone.trigger('too many cards');
+          }
+        }
+      }
+      return {
+        drawInfectionCards: function() {
+          var infectionDeck, _k, _results;
+
+          numCardsToDraw = infectionRate2numCards[App.World.get('infectionRate')];
+          infectionDeck = App.World.get('infectionDeck');
+          _results = [];
+          for (i = _k = 0; 0 <= numCardsToDraw ? _k < numCardsToDraw : _k > numCardsToDraw; i = 0 <= numCardsToDraw ? ++_k : --_k) {
+            card = infectionDeck.shift();
+            App.World.Cities[card.get('name')].infect(1);
+            _results.push(App.World.get('infectionDiscard').unshift(card));
+          }
+          return _results;
+        }
+      };
     }
   });
   TOKEN_COLORS = ['black', 'red', 'yellow', 'blue'];
@@ -819,6 +862,9 @@ $(function() {
         return this.set("diseaseCubes", 0);
       }
     },
+    setDiseaseCubes: function(numCubes) {
+      return this.set('diseaseCubes', numCubes);
+    },
     infect: function(numCubes) {
       this.addDiseaseCubes(numCubes);
       if (this.get("diseaseCubes") > 3) {
@@ -835,7 +881,7 @@ $(function() {
   App.View.City = Backbone.View.extend({
     tagName: "div",
     className: "cityview",
-    __template: "<ul class=\"num-infected\">\n  {{#num_infected}}\n  <li class=\"infected-cube {{color}}\">&nbsp;</li>\n  {{/num_infected}}\n</ul>\n<div class=\"sphere {{color}}\"></div>\n<div class=\"research-center active\"></div>",
+    __template: "<ul class=\"num-infected\">\n  {{#num_infected}}\n  <li class=\"infected-cube {{color}}\">&nbsp;</li>\n  {{/num_infected}}\n</ul>\n<div class=\"sphere {{color}}\"></div>\n<div class=\"research-center {{#researchCenter}}active{{/researchCenter}}\"></div>",
     template: function(c) {
       return Mustache.render(this.__template, c);
     },
@@ -1095,8 +1141,7 @@ $(function() {
     },
     initialize: function() {
       _.bindAll(this, 'increaseInfectionRate');
-      this.rate = 0;
-      this.numCards = infectionRate2numCards[this.rate];
+      this.numCards = infectionRate2numCards[App.World.get('infectionRate')];
       return Backbone.on('increase_infection_rate', this.increaseInfectionRate);
     },
     render: function() {
@@ -1106,10 +1151,13 @@ $(function() {
       return this;
     },
     increaseInfectionRate: function() {
-      if (this.rate < 6) {
-        this.rate++;
+      var rate;
+
+      rate = App.World.get('infectionRate');
+      if (rate < 6) {
+        App.World.set('infectionRate', rate + 1);
       }
-      this.numCards = infectionRate2numCards[this.rate];
+      this.numCards = infectionRate2numCards[App.World.get('infectionRate')];
       return this.render();
     }
   });
@@ -1238,7 +1286,6 @@ $(function() {
   });
   _.extend(App, {
     init: function(cb) {
-      alert("HErE!@@@@@@@@@@@@@@@@@");
       if (navigator.geolocation) {
         navigator.geolocation.watchPosition(cb, this.error);
       } else {
@@ -1347,6 +1394,7 @@ $(function() {
     console.log("HERE WE ARE IN INIT LOGIC");
     console.log(data);
     App = window.App;
+    App.World.Cities['Atlanta'].buildResearchCenter();
     userId = data['clientId'];
     appPlayers = [];
     _ref = data['players'];
@@ -1381,7 +1429,7 @@ $(function() {
       });
       infectionDeck.push(newCard);
     }
-    App.InfectionDeck = new App.Collection.Card(infectionDeck);
+    App.World.set('infectionDeck', new App.Collection.Card(infectionDeck));
     playerDeck = [];
     _ref3 = data['playerDeck'];
     for (_l = 0, _len3 = _ref3.length; _l < _len3; _l++) {
@@ -1392,9 +1440,9 @@ $(function() {
       });
       playerDeck.push(newCard);
     }
-    App.PlayerDeck = new App.Collection.Card(playerDeck);
-    App.InfectionDiscard = new App.Collection.Card();
-    App.PlayerDiscard = new App.Collection.Card();
+    App.World.set('playerDeck', new App.Collection.Card(playerDeck));
+    App.World.set('infectionDiscard', new App.Collection.Card());
+    App.World.set('playerDiscard', new App.Collection.Card());
     _ref4 = data['infections'];
     for (cityName in _ref4) {
       numInfections = _ref4[cityName];
