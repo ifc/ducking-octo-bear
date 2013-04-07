@@ -53,6 +53,21 @@ $ ->
         Once per turn at a research station you may spend an action and discard any city card to move to any city
       """
 
+  RED     = 1
+  BLUE    = 2
+
+  DRIVE           = 1
+  DIRECT_FLIGHT   = 2
+  CHARTER_FLIGHT  = 3
+  SHUTTLE_FLIGHT  = 4
+  PASS            = 5
+
+  DISPATCH              = 1
+  BUILD_RESEARCH_CENTER = 2
+  DISCOVER_CURE         = 3
+  TREAT_DISEASE         = 4
+  SHARE_KNOWLEDGE       = 5
+
 
   curedDiseases = []
   infection =
@@ -64,7 +79,7 @@ $ ->
     disease: BLUE
 
   playerBasicActions = [DRIVE, DIRECT_FLIGHT, CHARTER_FLIGHT, SHUTTLE_FLIGHT, PASS]
-  playerSpecialActions = [DISPATCH, BUILD_RESEARCH_CENTER, DISCOVER_CURE, TREATMENT, SHARE_KNOWLEDGE]
+  playerSpecialActions = [DISPATCH, BUILD_RESEARCH_CENTER, DISCOVER_CURE, TREAT_DISEASE, SHARE_KNOWLEDGE]
   player2SpecialAction =
     1: DISPATCH
     2: BUILD_RESEARCH_CENTER
@@ -233,11 +248,6 @@ $ ->
 
       Milan:
         connections: ["Paris", "Essen", "Istanbul"]
-
-  # World creates a basic graph from
-  # cities and updates.
-  world = new World
-    Regions: REGIONS
 
   World = Backbone.Model.extend
     initialize: (options) ->

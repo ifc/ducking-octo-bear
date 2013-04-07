@@ -1,5 +1,5 @@
 $(function() {
-  var App, Card, CardView, City, CityView, REGIONS, RightPanel, World, createLine, curedDiseases, currentTurn, infection, infectionRate, infectionRate2numCards, locationId2Cube, log, numOutbreaks, numPlayers, player2SpecialAction, playerBasicActions, playerLocations, playerRoles, playerSpecialActions, researchCenter, world;
+  var App, BLUE, BUILD_RESEARCH_CENTER, CHARTER_FLIGHT, Card, CardView, City, CityView, DIRECT_FLIGHT, DISCOVER_CURE, DISPATCH, DRIVE, PASS, RED, REGIONS, RightPanel, SHARE_KNOWLEDGE, SHUTTLE_FLIGHT, TREAT_DISEASE, World, createLine, curedDiseases, currentTurn, infection, infectionRate, infectionRate2numCards, locationId2Cube, log, numOutbreaks, numPlayers, player2SpecialAction, playerBasicActions, playerLocations, playerRoles, playerSpecialActions, researchCenter;
 
   window.Game = this;
   log = console.log;
@@ -38,7 +38,19 @@ $(function() {
       description: "You may build a Research Station in your current city for one action.\nOnce per turn at a research station you may spend an action and discard any city card to move to any city"
     }
   };
-  curedDiseases = [red, blue];
+  RED = 1;
+  BLUE = 2;
+  DRIVE = 1;
+  DIRECT_FLIGHT = 2;
+  CHARTER_FLIGHT = 3;
+  SHUTTLE_FLIGHT = 4;
+  PASS = 5;
+  DISPATCH = 1;
+  BUILD_RESEARCH_CENTER = 2;
+  DISCOVER_CURE = 3;
+  TREAT_DISEASE = 4;
+  SHARE_KNOWLEDGE = 5;
+  curedDiseases = [];
   infection = {
     location: 1,
     disease: RED
@@ -48,7 +60,7 @@ $(function() {
     disease: BLUE
   };
   playerBasicActions = [DRIVE, DIRECT_FLIGHT, CHARTER_FLIGHT, SHUTTLE_FLIGHT, PASS];
-  playerSpecialActions = [DISPATCH, BUILD_RESEARCH_CENTER, DISCOVER_CURE, TREATMENT, SHARE_KNOWLEDGE];
+  playerSpecialActions = [DISPATCH, BUILD_RESEARCH_CENTER, DISCOVER_CURE, TREAT_DISEASE, SHARE_KNOWLEDGE];
   player2SpecialAction = {
     1: DISPATCH,
     2: BUILD_RESEARCH_CENTER,
@@ -223,9 +235,6 @@ $(function() {
       }
     }
   };
-  world = new World({
-    Regions: REGIONS
-  });
   World = Backbone.Model.extend({
     initialize: function(options) {
       return initGraph();
