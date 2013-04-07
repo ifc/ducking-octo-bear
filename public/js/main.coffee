@@ -398,6 +398,7 @@ $ ->
     initialize: (options) ->
       # Setting a bunch of state variables here. Easier to toJSON().
       @set('curedDiseases', [])
+      @set('eradicatedDiseases', [])
 
       @Regions = options.Regions
       @Cities = {}
@@ -408,6 +409,7 @@ $ ->
           City.set 'color', Color
           City.set 'name', name
           @Cities[name] = City
+
     # Link to cities for each
     initGraph: ->
       @CityViews = []
@@ -538,7 +540,6 @@ $ ->
 
       return ret
 
-
     # TODO: given 'selected' cards.
     # Scientist role complete.
     discoverCure: (targetColor) ->
@@ -578,7 +579,6 @@ $ ->
         ret = 0
 
       return ret
-
 
     shareKnowledge: (targetUser, targetCard) ->
       ret = 0
@@ -632,7 +632,7 @@ $ ->
 
       return ret
 
-    # Will return 0 if action was performed. If not zero, couldn't take action. @@@
+    # Will return 0 if action was performed. If not zero, couldn't take action.
     # - TODO: bake in player roles.
     takeAction: (actionId, options) ->
       ret = 0
@@ -661,6 +661,15 @@ $ ->
         ret = -1
 
       return ret
+
+    # Draw the two player cards after a players turn.
+    # - will trigger a global epidemic event if epidemic is triggered.
+    drawPlayerCards: () ->
+      numCardsToDraw = 2
+      for i in [0...2]
+        console.log('@@@@@')
+
+
 
   TOKEN_COLORS = ['black', 'red', 'yellow', 'blue']
   TOKEN_INDEX = 0
@@ -1235,7 +1244,7 @@ $ ->
         'name': name
         'type': 'infection'
       infectionDeck.push(newCard)
-    App.InfectionDeck = new App.Collection.Card(infectionDeck)
+    App.World.set('infectionDeck', new App.Collection.Card(infectionDeck))
 
     # Create player card deck.
     playerDeck = []
@@ -1244,11 +1253,11 @@ $ ->
         'name': name
         'type':  if name.indexOf('EPIDEMIC') >= 0 then "epidemic" else "city card"
       playerDeck.push(newCard)
-    App.PlayerDeck = new App.Collection.Card(playerDeck)
+    App.World.set('playerDeck', new App.Collection.Card(playerDeck))
 
     # Finally initialize the discard piles ()
-    App.InfectionDiscard = new App.Collection.Card()
-    App.PlayerDiscard = new App.Collection.Card()
+    App.World.set('infectionDiscard', new App.Collection.Card())
+    App.World.set('playerDiscard', new App.Collection.Card())
 
     # Infect the initial cities.
     for cityName, numInfections of data['infections']
@@ -1256,6 +1265,7 @@ $ ->
       App.World.Cities[cityName].infect(numInfections)
 
     console.log("DONE WITH INIT")
+
 
   playTurn = (data) ->
 

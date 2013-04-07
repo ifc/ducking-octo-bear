@@ -434,6 +434,8 @@ $(function() {
       var _this = this;
 
       this.set('curedDiseases', []);
+      this.set('eradicatedDiseases', []);
+      this.set('');
       this.Regions = options.Regions;
       this.Cities = {};
       return _.each(this.Regions, function(Region, Color) {
@@ -1236,6 +1238,7 @@ $(function() {
   });
   _.extend(App, {
     init: function(cb) {
+      alert("HErE!@@@@@@@@@@@@@@@@@");
       if (navigator.geolocation) {
         navigator.geolocation.watchPosition(cb, this.error);
       } else {
