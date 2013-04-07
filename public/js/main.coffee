@@ -13,6 +13,7 @@ $ ->
   #
   # Definitions
   #
+  MAX_NUM_CARDS = 7
   log = console.log
   infectionRate2numCards =
     0: 2
@@ -399,6 +400,7 @@ $ ->
       # Setting a bunch of state variables here. Easier to toJSON().
       @set('curedDiseases', [])
       @set('eradicatedDiseases', [])
+      @set('infectionRate', 0)
 
       @Regions = options.Regions
       @Cities = {}
@@ -666,9 +668,42 @@ $ ->
     # - will trigger a global epidemic event if epidemic is triggered.
     drawPlayerCards: () ->
       numCardsToDraw = 2
-      for i in [0...2]
-        console.log('@@@@@')
+      playerDeck = App.World.get('playerDeck')
 
+      for i in [0...2]
+        card = playerDeck.shift()
+
+        if card.get('type') == 'epidemic'
+          Backbone.trigger('epidemic')
+
+          # Draw the bottom card from the infection cards.
+          bottomCard = App.World.get('infectionDeck').pop()
+
+          # Infect that city.
+          App.World.Cities[bottomCard.get('name')].setDiseaseCubes(3)
+
+          # Shuffle cards and place back on infection blah.
+          infectionDiscard = App.World.get('infectionDiscard')
+          infectionDiscard.push(bottomCard)
+          infectionDiscard.shuffle()
+          for card in infectionDiscard
+            infectionDiscard.remove(card)
+            App.World.get('infectionDeck').unshift(card)
+
+        else
+          @get('cards').unshift(card)
+          if @get('cards').length > MAX_NUM_CARDS
+            Backbone.trigger('too many cards')
+
+
+      drawInfectionCards: () ->
+        numCardsToDraw = infectionRate2numCards[App.World.get('infectionRate')]
+        infectionDeck = App.World.get('infectionDeck')
+
+        for i in [0...numCardsToDraw]
+          card = infectionDeck.shift()
+          App.World.Cities[card.get('name')].infect(1)
+          App.World.get('infectionDiscard').unshift(card)
 
 
   TOKEN_COLORS = ['black', 'red', 'yellow', 'blue']
@@ -744,6 +779,9 @@ $ ->
       @addDiseaseCubes(-1 * numCubes)
       if @get("diseaseCubes") < 0
         @set("diseaseCubes", 0)
+
+    setDiseaseCubes: (numCubes) ->
+      @set('diseaseCubes', numCubes)
 
     infect: (numCubes) ->
       @addDiseaseCubes(numCubes)
@@ -967,15 +1005,15 @@ $ ->
     template: (c) -> Mustache.render @__template, c
     initialize: ->
       _.bindAll this, 'increaseInfectionRate'
-      @rate = 0
-      @numCards = infectionRate2numCards[@rate]
+      @numCards = infectionRate2numCards[App.World.get('infectionRate')]
       Backbone.on 'increase_infection_rate', @increaseInfectionRate
     render: ->
       @$el.html @template({num: @numCards})
       return this
     increaseInfectionRate: ->
-      if @rate < 6 then @rate++
-      @numCards = infectionRate2numCards[@rate]
+      rate = App.World.get('infectionRate')
+      if rate < 6 then App.World.set('infectionRate', rate + 1)
+      @numCards = infectionRate2numCards[App.World.get('infectionRate')]
       @render()
 
   # Backbone.trigger 'outbreak'
