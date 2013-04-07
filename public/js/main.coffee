@@ -419,6 +419,8 @@ $ ->
         view.setPosition()
         @CityViews.push(view)
 
+  App.Model.User = Backbone.Model.extend()
+
   App.Model.Card = Backbone.Model.extend()
 
   App.Collection.Card = Backbone.Collection.extend
@@ -570,6 +572,19 @@ $ ->
       # User is taking a single action
       # @@@@@@@@
 
+      """
+      DRIVE                 = 1
+      DIRECT_FLIGHT         = 2
+      CHARTER_FLIGHT        = 3
+      SHUTTLE_FLIGHT        = 4
+      PASS                  = 5
+      DISPATCH              = 6
+      BUILD_RESEARCH_CENTER = 7
+      DISCOVER_CURE         = 8
+      TREAT_DISEASE         = 9
+      SHARE_KNOWLEDGE       = 10
+      """
+
 
 
   ###############
@@ -601,6 +616,21 @@ $ ->
     console.log("HERE WE ARE IN INIT LOGIC")
     console.log(data)
     App = window.App
+
+    # Define the user.
+    userId = data['clientId']
+    for playerDict in data['players']
+      if playerDict['clientId'] == userId
+        App.user = new App.Model.User(playerDict)
+        break
+
+    playerCards = []
+    for cardName in App.user.get('cards')
+      playerCards.push new App.Model.Card
+        'name': cardName
+        'type': 'city card'
+
+    App.user.set('cards', new App.Collection.Card(playerCards))
 
     # Create infection card deck.
     infectionDeck = []

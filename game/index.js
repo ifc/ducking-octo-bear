@@ -108,7 +108,7 @@ function getBootstrapObject(sessionId) {
   var players = [];
   for (var i = 0; i < playerSessionIds.length; i++) {
     players.push({
-      'sessionId': playerSessionIds[i],
+      'clientId': playerSessionIds[i],
       'role': 'researcher',
       'location': 'Atlanta',
       'cards': playerCards['playerCards'][i]

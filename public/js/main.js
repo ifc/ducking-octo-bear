@@ -469,6 +469,7 @@ $(function() {
       });
     }
   });
+  App.Model.User = Backbone.Model.extend();
   App.Model.Card = Backbone.Model.extend();
   App.Collection.Card = Backbone.Collection.extend({
     model: App.Model.Card
@@ -592,7 +593,23 @@ $(function() {
     playTurn: function(data) {
       return playTurn(data);
     },
-    takeAction: function(actionId, options) {}
+    takeAction: function(actionId, options) {
+      var dest;
+
+      if (actionId === DRIVE) {
+        dest = options['destination'];
+      }
+      DRIVE = 1;
+      DIRECT_FLIGHT = 2;
+      CHARTER_FLIGHT = 3;
+      SHUTTLE_FLIGHT = 4;
+      PASS = 5;
+      DISPATCH = 6;
+      BUILD_RESEARCH_CENTER = 7;
+      DISCOVER_CURE = 8;
+      TREAT_DISEASE = 9;
+      return SHARE_KNOWLEDGE = 10;
+    }
   });
   App.init(function(position) {
     var socket;
@@ -612,15 +629,34 @@ $(function() {
     });
   });
   initLogic = function(data) {
-    var cityName, infectionDeck, name, newCard, numInfections, playerDeck, _i, _j, _len, _len1, _ref, _ref1, _ref2;
+    var cardName, cityName, infectionDeck, name, newCard, numInfections, playerCards, playerDeck, playerDict, userId, _i, _j, _k, _l, _len, _len1, _len2, _len3, _ref, _ref1, _ref2, _ref3, _ref4;
 
     console.log("HERE WE ARE IN INIT LOGIC");
     console.log(data);
     App = window.App;
-    infectionDeck = [];
-    _ref = data['infectionDeck'];
+    userId = data['clientId'];
+    _ref = data['players'];
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      name = _ref[_i];
+      playerDict = _ref[_i];
+      if (playerDict['clientId'] === userId) {
+        App.user = new App.Model.User(playerDict);
+        break;
+      }
+    }
+    playerCards = [];
+    _ref1 = App.user.get('cards');
+    for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+      cardName = _ref1[_j];
+      playerCards.push(new App.Model.Card({
+        'name': cardName,
+        'type': 'city card'
+      }));
+    }
+    App.user.set('cards', new App.Collection.Card(playerCards));
+    infectionDeck = [];
+    _ref2 = data['infectionDeck'];
+    for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
+      name = _ref2[_k];
       newCard = new App.Model.Card({
         'name': name,
         'type': 'infection'
@@ -629,9 +665,9 @@ $(function() {
     }
     App.infectionDeck = new App.Collection.Card(infectionDeck);
     playerDeck = [];
-    _ref1 = data['playerDeck'];
-    for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
-      name = _ref1[_j];
+    _ref3 = data['playerDeck'];
+    for (_l = 0, _len3 = _ref3.length; _l < _len3; _l++) {
+      name = _ref3[_l];
       newCard = new App.Model.Card({
         'name': name,
         'type': name.indexOf('EPIDEMIC') >= 0 ? "epidemic" : "city card"
@@ -641,9 +677,9 @@ $(function() {
     App.playerDeck = new App.Collection.Card(playerDeck);
     App.infectionDiscard = new App.Collection.Card();
     App.playerDiscard = new App.Collection.Card();
-    _ref2 = data['infections'];
-    for (cityName in _ref2) {
-      numInfections = _ref2[cityName];
+    _ref4 = data['infections'];
+    for (cityName in _ref4) {
+      numInfections = _ref4[cityName];
       App.World.Cities[cityName].infect(numInfections);
     }
     console.log("DONE WITH INIT");
