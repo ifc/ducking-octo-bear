@@ -320,27 +320,10 @@ $ ->
   RightPanel = Backbone.View.extend
     el: '#right-panel'
     __template: """
-
+      <h1>
     """
     template: (c) -> Mustache.render @__template, c
     context: ->
       @model.toJSON()
     render: ->
       @$el.html @template _.result this, 'context'
-
-  #
-  # Async bootstrap
-  #
-  App =
-    init: (cb) ->
-
-      # Geo locate
-      if navigator.geolocation
-
-        # navigator.geolocation.getCurrentPosition(cb, this.error);
-        navigator.geolocation.watchPosition cb, @error
-      else
-        error "not supported"
-
-    error: (msg) ->
-      log msg
