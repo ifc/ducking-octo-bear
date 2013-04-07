@@ -1,12 +1,12 @@
 extends layout
 
 block content
-  h1= title
-  p Welcome to #{title}
 
   script(src="/js/jquery.js")
+  script(src="/js/underscore.js")
+  script(src="/js/backbone.js")
   script(src="/js/d3.js")
+  script(src="/socket.io/socket.io.js")
   script(src="/js/main.js")
 
-  div(id="status")
-  div(id="stage", class="twelve columns")
+  div(id="stage")

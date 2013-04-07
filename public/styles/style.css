@@ -1,9 +1,15 @@
 body {
-  padding: 50px;
   font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
 }
 a {
   color: #00B7FF;
+}
+#stage {
+  width: 1024px;
+  height: 768px;
+  background: url("http://clipartist.info/www/COLOURINGBOOK.ORG/Letters/W/world_map_1_coloring_book_colouring-2555px.png");
+  background-size: contain;
+  background-repeat: no-repeat;
 }
 /*
  * Skeleton

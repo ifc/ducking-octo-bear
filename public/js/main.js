@@ -13,7 +13,8 @@ $(function() {
     init: function(cb) {
     // Geo locate
       if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(cb, this.error);
+        // navigator.geolocation.getCurrentPosition(cb, this.error);
+        navigator.geolocation.watchPosition(cb, this.error);
       } else {
         error('not supported');
       }
@@ -36,11 +37,14 @@ $(function() {
       return;
     }
 
-    var x = position.coords.latitude,
-        y = position.coords.longitude;
-    alert(x + " " + y);
+    var x = position.coords.latitude, y = position.coords.longitude;
 
-    $('#stage').html(x + " " + y);
+
+    var socket = io.connect('http://localhost:3000');
+    socket.on('news', function (data) {
+      console.log(data);
+      socket.emit('my other event', { my: 'data' });
+    });
 
   }); // App.init
 
