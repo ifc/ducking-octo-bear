@@ -26,7 +26,7 @@ a {
 .line{
   z-index: 1;
   transform-origin: 0 100%;
-  height: 3px; /* Line width of 3 */
+  height: 2px; /* Line width of 3 */
   background: #000; /* Black fill */
 }
 
@@ -54,24 +54,70 @@ a {
   background-repeat: no-repeat;
 }
 
+/////////////////////////////////////////
+
 #outbreaks {
+  z-index: 100;
   display: inline-block;
-  width: (1200 / 3) * 1px;
+  width: (1200/6) * 1px;
   height: 100px;
   bottom: 0;
   .panel();
   position: fixed;
 }
 
-#cures {
+/////////////////////////////////////////
+
+#infection_rate {
+  z-index: 100;
   display: inline-block;
-  width: (1200 / 3) * 1px;
+  background: white;
+  width: (1200/6) * 1px;
+  height: 100px;
+  bottom: 0;
+  .panel();
+  position: fixed;
+}
+
+/////////////////////////////////////////
+
+#hand {
+  z-index: 100;
+  top: 50px;
+  left: 50px;
+  width: 700px;
+  height: 250px;
+  .rounded(4px);
+  border: 1px solid #dedede;
+  background: white;
+  position: fixed;
+  .cards {
+    list-style: none;
+  }
+}
+#hand-toggle {
+  position: fixed;
+  z-index: 100;
+  top: 0;
+  right: 100px;
+  text-align: left;
+}
+
+/////////////////////////////////////////
+
+#cures {
+  z-index: 100;
+  display: inline-block;
+  background: white;
+  width: (1200/3) * 1px;
   height: 100px;
   bottom: 0;
   left: (1200/3) * 1px;
   .panel();
   position: fixed;
 }
+
+/////////////////////////////////////////
 
 #right-panel-toggle {
   z-index: 100;
@@ -81,7 +127,7 @@ a {
   text-align: left;
 }
 #right-panel {
-  z-index: 50;
+  z-index: 99;
   .panel();
   position: fixed;
   top: 0;
@@ -90,7 +136,7 @@ a {
   width: (1200 / 3) * 1px;
 }
 .cityview {
-  z-index: 99;
+  z-index: 98;
   position: absolute;
   background-color: transparent;
   &.selectable {
@@ -102,20 +148,25 @@ a {
 }
 
 .card {
-  height: 24px;
-  width: 50px;
+  display: inline-block;
   .border-radius(5px);
   .title {
+    width: 100%;
     height: 24px;
   }
   .name {
+    width: 100%;
     height: 24px;
     background: yellow;
   }
   .map {
-
+    width: 100%;
+    background-image: url("/img/mini-map.png");
+    background-repeat: no-repeat;
+    background-size: contain;
   }
   .footer {
+    width: 100%;
     height: 24px;
   }
 }

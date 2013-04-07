@@ -106,11 +106,14 @@ $ ->
     line = $("<div>").appendTo("body").addClass("line").css(
       position: "absolute"
       transform: transform
+      '-webkit-transform-origin': '0% 0%'
     ).width(length).offset(
       left: x1
       top: y1
     )
     line
+
+  window._createLine = createLine
 
   # Cities are Backbone objects
   REGIONS =
@@ -361,7 +364,7 @@ $ ->
       Washington:
         connections: ["Atlanta", "Toronto", "New York", "Miami"]
         css:
-          top: 280	
+          top: 280
           left: 360
 
       Atlanta:
@@ -430,16 +433,6 @@ $ ->
         # draw lines
       _.each @CityViews, (view) =>
         view.drawConnections()
-    initPlayerViews: ->
-      @PlayerViews = []
-      _.each @Players, (Player) =>
-        view = new App.View.Player {model: Player}
-        @PlayerViews.push(view)
-    initCardViews: ->
-      @CardViews = []
-      App.CardCollection.forEach (Card) =>
-        view = new App.View.Card {model: Card}
-        @CardViews.push(view)
     makeNodesSelectable: ->
       console.log "World nodes made selectable"
       _.each @CityViews, (view) ->
@@ -448,20 +441,13 @@ $ ->
       _.each @CityViews, (view) ->
         view.makeUnselectable()
     makeCardsSelectable: ->
-      _.each @CardViews, (view) ->
-        view.makeSelectable()
+      App.Hand.show().makeSelectable()
     makeCardsUnselectable: ->
-      _.each @CardViews, (view) ->
-        view.makeUnselectable()
+      App.Hand.hide().makeUnselectable()
     makePlayersSelectable: ->
-      _.each @PlayerViews, (view) ->
-        view.makeSelectable()
+      App.PlayersView.show().makeSelectable()
     makePlayersUnselectable: ->
-      _.each @PlayerViews, (view) ->
-        view.makeUnselectable()
-
-  App.Model.Player = Backbone.Model.extend
-    validate: -> false if not @has 'name' or not @has 'id'
+      App.PlayersView.hide().makeUnselectable()
 
   App.Model.User = Backbone.Model.extend
     drive: (destination) ->
@@ -480,7 +466,7 @@ $ ->
       for card in myCards
         if card.get('name') == destination.get('name')
           myCards.remove(card)
-          App.playerDiscard.shift(card)
+          App.PlayerDiscard.shift(card)
           @set('location', destination)
           ret = 0
           break
@@ -498,7 +484,7 @@ $ ->
       for card in myCards
         if card.get('name') == curLocation.get('name')
           myCards.remove(card)
-          App.playerDiscard.shift(card)
+          App.PlayerDiscard.shift(card)
           @set('location', destination)
           ret = 0
           break
@@ -647,7 +633,7 @@ $ ->
       #shuttleFlight
 
       # Finally see if the location is where someone else is.
-      for player in App.players
+      for player in App.Players
         if player.get('location') == destination
           targetUser.set('location', destination)
           ret = 0
@@ -693,8 +679,43 @@ $ ->
   App.Collection.Card = Backbone.Collection.extend
     model: App.Model.Card
 
-  App.View.Card = Backbone.Model.extend
-    tagName: "div"
+  App.View.Card = Backbone.View.extend
+    tagName: "li"
+    className: "card"
+    attributes:
+      width: 75
+      height: 200
+    __template: """
+      <div class="title">
+        <div class="sphere {{color}} pull-left"></div>
+      </div>
+      <div class="name">
+        {{name}}
+      </div>
+      <div class="map">
+        &nbsp;
+      </div>
+      <div class="footer">
+        <div class="sphere {{color}} pull-right"></div>
+      </div>
+    """
+    template: (c) -> Mustache.render @__template, c
+    initialize: ->
+      _.bindAll this, 'selectCard', 'render'
+    events:
+      'click': 'selectCard'
+    render: ->
+      @$el.html(@template _.result this, 'context')
+      return this
+    context: ->
+      name: ''
+      color: ''
+    # Because players may select multiple cards to trade...
+    selectCard: ->
+      Backbone.trigger 'card:selected', id
+
+  App.View.Hand = Backbone.Model.extend
+    el: '#hand'
     className: "card"
     __template: """
       <div class="title">
@@ -712,17 +733,11 @@ $ ->
     """
     template: (c) -> Mustache.render @__template, c
     initialize: ->
-      _.bindAll this, 'selectCard'
-    events:
-      'click': 'selectCard'
+      _.bindAll this, 'render'
+      @collection.on 'reset add remove', @render
     render: ->
-      @$el.html @template _.result this, 'context'
-    context: ->
-      name: ''
-      color: ''
-    # Because players may select multiple cards to trade...
-    selectCard: ->
-      Backbone.trigger 'card:selected', id
+      @$el.html @template
+      return this
 
   App.Model.City = Backbone.Model.extend
     initialize: (opt) ->
@@ -793,19 +808,18 @@ $ ->
           y1 = @model.get('css').top + h
           x2 = city.get('css').left + w
           y2 = city.get('css').top + h
-          console.log @model.get('name'), city.get('name')
-          console.log x1, y1, x2, y2
           length = Math.max(x1-x2, x2-x1)
-          if length > $('#stage').width()
+          if length > $('#stage').width() / 2
+            console.log @model.id, city.id
             # draw two lines as we 'wrap around' the board
             leftMost = null
             rightMost = null
-            if x1 > x3
-              leftMost = @model
-              rightMost = city
-            else
+            if x1 > x2
               leftMost = city
               rightMost = @model
+            else
+              leftMost = @model
+              rightMost = city
             # draw line from left edge
             x1 = 0
             y1 = rightMost.get('css').top + h
@@ -825,20 +839,31 @@ $ ->
   App.Collection.City = Backbone.Collection.extend
     model: App.Model.City
 
+  App.View.Player = Backbone.View.extend
+    tagName: 'li'
+    className: 'player'
+    __template: """
+      <h4 data-id="{{id}}">{{name}}</h4>
+    """
+    template: (c) -> Mustache.render @__template, c
+    render: ->
+      @$el.html(@template @model.toJSON())
+      return this
+
   App.View.PlayersPanel = Backbone.View.extend
     el: '#player-panel'
     __template: """
-      <ul class="players">
-        {{#players}}
-        <li class="player" data-id="{{id}}">{{name}}</li>
-        {{/players}}
+      <ul class="players"></ul>
     """
     events:
       'click .player': 'playerClicked'
       'click .submit': 'submitted'
     template: (c) -> Mustache.render @__template, c
     render: ->
-      @$el.html @template @collection.toJSON()
+      @$el.html @template({})
+      @collection.forEach (player) =>
+        @$('.players').append (new App.View.Player {model: player}).render().el
+      return this
     playerClicked: (e) ->
       id = parseInt $(e.currentTarget).data('id')
       $(e.currentTarget).toggleClass('active')
@@ -847,6 +872,20 @@ $ ->
       $('.player').removeClass('active')
       Backbone.trigger 'player:selected', @playerSelected
       @playerSelected = null
+
+  App.View.Hand = Backbone.View.extend
+    el: '#hand'
+    __template: """
+      <ul class="cards"></ul>
+    """
+    template: (c) -> Mustache.render @__template, c
+    initialize: ->
+      _.bindAll this, 'render'
+    render: ->
+      @$el.html @template({})
+      @collection.forEach (card) =>
+        @$('.cards').append (new App.View.Card({model: card})).render().el
+      return this
 
   App.View.RightPanel = Backbone.View.extend
     el: '#right-panel'
@@ -870,14 +909,59 @@ $ ->
     events:
       'click .action': 'takeAction'
     context: -> @model.toJSON()
+    initialize: ->
+      @user = App.User
     render: ->
       @$el.html @template _.result this, 'context'
+      return this
     takeAction: (e) ->
-      @$('.action').removeClass('active')
-      $(e.currentTarget).toggleClass('active')
-      id = parseInt $(e.currentTarget).data('action'), 10
-      console.log "Taking action #{id}"
-      Backbone.trigger 'rightPanel:actionTaken', id
+      if $(e.currentTarget).hasClass('active')
+        @$('.action').removeClass('active')
+        App.World.makeNodesUnselectable()
+        return
+      else
+        @$('.action').removeClass('active')
+        $(e.currentTarget).toggleClass('active')
+        id = parseInt $(e.currentTarget).data('action'), 10
+        console.log "Taking action #{id}"
+        Backbone.trigger 'rightPanel:actionTaken', id
+
+  App.View.InfectionRate = Backbone.View.extend
+    el: '#infection_rate'
+    __template: """
+      <h4 style="opacity: 0.5">Infection Rate</h4>
+      <h2>{{num}}</h2>
+    """
+    template: (c) -> Mustache.render @__template, c
+    initialize: ->
+      _.bindAll this, 'increaseInfectionRate'
+      @numCards = infectionRate2numCards[0]
+      Backbone.on 'increase_infection_rate', @increaseInfectionRate
+    render: ->
+      @$el.html @template({num: @numCards})
+      return this
+    increaseInfectionRate: ->
+      if @rate < 7 then @rate++
+      @numCards = infectionRate2numCards[@rate]
+      @render()
+
+  App.View.Infections = Backbone.View.extend
+    el: '#outbreaks'
+    __template: """
+      <h4 style="opacity: 0.5">Outbreaks</h4>
+      <h2>{{num}} out of 8</h2>
+    """
+    template: (c) -> Mustache.render @__template, c
+    initialize: ->
+      _.bindAll this, 'increaseOutbreaks'
+      @numOutbreak = 1
+      Backbone.on 'outbreak', @increaseOutbreaks
+    render: ->
+      @$el.html @template({num: @numOutbreak})
+      return this
+    increaseOutbreaks: ->
+      @numOutbreak++
+      @render()
 
   App.View.ActionListener = Backbone.View.extend
     BackboneEvents:
@@ -900,13 +984,13 @@ $ ->
 
     rightPanelAction: (id) ->
       console.log "Right panel took action #{id}"
-      if DRIVE <= id <= SHUTTLE_FLIGHT
+      if DRIVE <= id <= SHUTTLE_FLIGHT or id == BUILD_RESEARCH_CENTER
         App.World.makeNodesSelectable()
       else
         App.World.makeNodesUnselectable()
 
     citySelected: (id) ->
-      console.log "Selected city #{id}"
+      alert "Selected city #{id}"
       @destination = id
       App.World.makeNodesUnselectable()
     cardsSelected: (id) ->
@@ -948,16 +1032,14 @@ $ ->
         $(e.currentTarget).toggleClass('red')
         $('#right-panel').toggle()
 
+      $('#hand-toggle').click (e) ->
+        $(e.currentTarget).toggleClass('red')
+        $('#hand').toggle()
+
       # World creates a basic graph from
       # cities and updates.
       App.World = new App.Model.World
         Regions: REGIONS
-      App.World.initGraph()
-      # App.World.initPlayerViews()
-      # App.World.initCardViews()
-      App.RightPanel = new App.View.RightPanel {model: App.World}
-      App.RightPanel.render()
-      App.ActionListener = new App.View.ActionListener()
 
     ###############################
 
@@ -975,15 +1057,7 @@ $ ->
       playTurn(data)
 
     takeAction: (actionId, options) ->
-      return window.App.user.takeAction(actionId, options)
-
-    ################################
-
-    globalStop: ->
-
-    ################################
-
-    playActionCard: (data) ->
+      return window.App.User.takeAction(actionId, options)
 
     ################################
 
@@ -1018,6 +1092,18 @@ $ ->
 
     socket.on "bootstrap", (data) ->
       App.bootstrap(data)
+
+      App.World.initGraph()
+      # App.World.initPlayerViews()
+      # App.World.initCardViews()
+      App.RightPanel = new App.View.RightPanel {model: App.World}
+      App.RightPanel.render()
+      App.PlayersPanel = (new App.View.PlayersPanel {collection: App.Players}).render()
+      App.Hand = (new App.View.Hand {collection: App.User.get('cards')}).render()
+      App.InfectionsView = (new App.View.Infections()).render()
+      App.InfectionRateView = (new App.View.InfectionRate()).render()
+      App.ActionListener = new App.View.ActionListener()
+
       App.started = true
 
     socket.on "message", (data) ->
@@ -1053,8 +1139,8 @@ $ ->
       appPlayers.push(player)
 
       if playerDict['clientId'] == userId
-        App.user = player
-    App.players = appPlayers
+        App.User = player
+    App.Players = appPlayers
 
     # Create infection card deck.
     infectionDeck = []
@@ -1063,7 +1149,7 @@ $ ->
         'name': name
         'type': 'infection'
       infectionDeck.push(newCard)
-    App.infectionDeck = new App.Collection.Card(infectionDeck)
+    App.InfectionDeck = new App.Collection.Card(infectionDeck)
 
     # Create player card deck.
     playerDeck = []
@@ -1072,11 +1158,11 @@ $ ->
         'name': name
         'type':  if name.indexOf('EPIDEMIC') >= 0 then "epidemic" else "city card"
       playerDeck.push(newCard)
-    App.playerDeck = new App.Collection.Card(playerDeck)
+    App.PlayerDeck = new App.Collection.Card(playerDeck)
 
     # Finally initialize the discard piles ()
-    App.infectionDiscard = new App.Collection.Card()
-    App.playerDiscard = new App.Collection.Card()
+    App.InfectionDiscard = new App.Collection.Card()
+    App.PlayerDiscard = new App.Collection.Card()
 
     # Infect the initial cities.
     for cityName, numInfections of data['infections']
@@ -1084,7 +1170,6 @@ $ ->
       App.World.Cities[cityName].infect(numInfections)
 
     console.log("DONE WITH INIT")
-    console.log(App)
 
   playTurn = (data) ->
 
