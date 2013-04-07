@@ -1,7 +1,7 @@
 var __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
 $(function() {
-  var App, BLUE, BUILD_RESEARCH_CENTER, CHARTER_FLIGHT, DIRECT_FLIGHT, DISCOVER_CURE, DISPATCH, DISPATCHER, DRIVE, MEDIC, OPS_EXPERT, PASS, RED, REGIONS, RESEARCHER, SCIENTIST, SHARE_KNOWLEDGE, SHUTTLE_FLIGHT, TOKEN_COLORS, TOKEN_INDEX, TREAT_DISEASE, createLine, curedDiseases, currentTurn, infection, infectionRate, infectionRate2numCards, initLogic, locationId2Cube, log, numOutbreaks, numPlayers, playTurn, player2SpecialAction, playerBasicActions, playerLocations, playerRoles, playerSpecialActions, researchCenter;
+  var App, BLUE, BUILD_RESEARCH_CENTER, CHARTER_FLIGHT, DIRECT_FLIGHT, DISCARD, DISCOVER_CURE, DISPATCH, DISPATCHER, DRIVE, MEDIC, OPS_EXPERT, PASS, RED, REGIONS, RESEARCHER, SCIENTIST, SHARE_KNOWLEDGE, SHUTTLE_FLIGHT, TOKEN_COLORS, TOKEN_INDEX, TREAT_DISEASE, createLine, curedDiseases, currentTurn, infection, infectionRate, infectionRate2numCards, initLogic, locationId2Cube, log, numOutbreaks, numPlayers, playTurn, player2SpecialAction, playerBasicActions, playerLocations, playerRoles, playerSpecialActions, researchCenter;
 
   window.Game = this;
   App = {
@@ -60,6 +60,7 @@ $(function() {
   DISCOVER_CURE = 8;
   TREAT_DISEASE = 9;
   SHARE_KNOWLEDGE = 10;
+  DISCARD = 11;
   OPS_EXPERT = 1;
   RESEARCHER = 2;
   MEDIC = 3;
@@ -751,7 +752,6 @@ $(function() {
 
       _.bindAll(this, 'render', 'moveToCoordinates', 'moveToCity');
       color = TOKEN_COLORS[TOKEN_INDEX++];
-      alert(color);
       return this.$el.addClass(color);
     },
     render: function() {
@@ -802,7 +802,9 @@ $(function() {
     },
     selectCard: function() {
       return Backbone.trigger('card:selected', this.model.id);
-    }
+    },
+    makeSelectable: function() {},
+    makeUnselectable: function() {}
   });
   App.Model.City = Backbone.Model.extend({
     initialize: function(opt) {
@@ -950,7 +952,9 @@ $(function() {
       console.log(this.model.toJSON());
       this.$el.html(this.template(this.model.toJSON()));
       return this;
-    }
+    },
+    makeSelectable: function() {},
+    makeUnselectable: function() {}
   });
   App.View.PlayersPanel = Backbone.View.extend({
     el: '#player-panel',
@@ -1059,7 +1063,7 @@ $(function() {
   });
   App.View.RightPanel = Backbone.View.extend({
     el: '#right-panel',
-    __template: "<ul class=\"actions\">\n  <li class=\"label\"><h4>Movement</h4></li>\n  <li class=\"action first\" data-action=\"1\">Drive</li>\n  <li class=\"action\" data-action=\"2\">Direct Flight</li>\n  <li class=\"action\" data-action=\"3\">Charter Flight</li>\n  <li class=\"action\" data-action=\"4\">Shuttle Flight</li>\n  <li class=\"action\" data-action=\"5\">Pass</li>\n  <li class=\"label\"><h4>Special Actions</h4></li>\n  <li class=\"action first\" data-action=\"6\">Dispatch</li>\n  <li class=\"action\" data-action=\"7\">Build Research Center</li>\n  <li class=\"action\" data-action=\"8\">Discover Cure</li>\n  <li class=\"action\" data-action=\"9\">Treat Disease</li>\n  <li class=\"action\" data-action=\"10\">Share Knowledge</li>\n</ul>",
+    __template: "<ul class=\"actions\">\n  <li class=\"label\"><h4>Movement</h4></li>\n  <li class=\"action first\" data-action=\"1\">Drive</li>\n  <li class=\"action\" data-action=\"2\">Direct Flight</li>\n  <li class=\"action\" data-action=\"3\">Charter Flight</li>\n  <li class=\"action\" data-action=\"4\">Shuttle Flight</li>\n  <li class=\"action\" data-action=\"5\">Pass</li>\n  <li class=\"label\"><h4>Special Actions</h4></li>\n  <li class=\"action first\" data-action=\"6\">Dispatch</li>\n  <li class=\"action\" data-action=\"7\">Build Research Center</li>\n  <li class=\"action\" data-action=\"8\">Discover Cure</li>\n  <li class=\"action\" data-action=\"9\">Treat Disease</li>\n  <li class=\"action\" data-action=\"10\">Share Knowledge</li>\n  <li class=\"action\" data-action=\"11\">Discard</li>\n</ul>",
     template: function(c) {
       return Mustache.render(this.__template, c);
     },
@@ -1080,9 +1084,15 @@ $(function() {
       var id;
 
       if ($(e.currentTarget).hasClass('active')) {
+        App.ActionListener.actionTaken = false;
         this.$('.action').removeClass('active');
+        App.PlayersPanel.hide();
+        App.PlayersPanel.makeUnselectable();
+        App.Hand.hide();
+        App.Hand.makeUnselectable();
         App.World.makeNodesUnselectable();
       } else {
+        App.ActionListener.actionTaken = true;
         this.$('.action').removeClass('active');
         $(e.currentTarget).toggleClass('active');
         id = parseInt($(e.currentTarget).data('action'), 10);
@@ -1183,25 +1193,52 @@ $(function() {
     rightPanelAction: function(id) {
       console.log("Right panel took action " + id);
       if ((DRIVE <= id && id <= SHUTTLE_FLIGHT) || id === BUILD_RESEARCH_CENTER) {
-        return App.World.makeNodesSelectable();
-      } else {
-        return App.World.makeNodesUnselectable();
+        App.World.makeNodesSelectable();
+      }
+      if (id === PASS) {
+        App.endTurn();
+      }
+      if (id === SHARE_KNOWLEDGE) {
+        App.PlayersPanel.show();
+        App.PlayersPanel.makeSelectable();
+      }
+      if (id === DISCARD) {
+        App.Hand.show();
+        return App.Hand.makeSelectable();
       }
     },
     citySelected: function(id) {
       alert("Selected city " + id);
-      this.destination = id;
-      return App.World.makeNodesUnselectable();
+      if (App.ActionListener.actionTaken = true) {
+        return App.takeAction(id, {
+          destination: id
+        });
+      } else {
+        return App.World.makeNodesUnselectable();
+      }
     },
     cardSelected: function(id) {
       console.log("Selected card " + id);
-      this.dict.cardId = id;
-      return App.World.makeCardsUnselectable();
+      if (App.ActionListener.actionTaken = true) {
+        App.takeAction(id, {
+          cardId: id
+        });
+        return App.Hand.hide();
+      } else {
+        return App.World.makeCardsUnselectable();
+      }
     },
     playerSelected: function(id) {
       console.log("Selected player " + id);
       this.dict.traderId = id;
-      return App.World.makePlayersUnselectable();
+      if (App.ActionListener.actionTaken = true) {
+        App.takeAction(id, {
+          traderId: id
+        });
+        return App.PlayersPanel.hide();
+      } else {
+        return App.World.makePlayersUnselectable();
+      }
     },
     clearSelections: function(name) {
       return this.dict = {
@@ -1219,12 +1256,15 @@ $(function() {
       } else {
         error("not supported");
       }
+      $('#right-panel').toggle();
       $('#right-panel-toggle').click(function(e) {
         return $('#right-panel').toggle();
       });
+      $('#hand').toggle();
       $('#hand-toggle').click(function(e) {
         return $('#hand').toggle();
       });
+      $('#player-panel').toggle();
       $('#players-toggle').click(function(e) {
         return $('#player-panel').toggle();
       });
@@ -1246,7 +1286,7 @@ $(function() {
       return playTurn(data);
     },
     takeAction: function(actionId, options) {
-      return window.App.User.takeAction(actionId, options);
+      return App.User.takeAction(actionId, options);
     },
     globalStop: function() {
       return $('body').addClass('paused');
@@ -1257,9 +1297,10 @@ $(function() {
     playActionCard: function(data) {},
     endTurn: function() {
       App.ActionListener.clearSelections();
-      return App.Socket.emit('endTurn', {
+      App.Socket.emit('endTurn', {
         playerId: ''
       });
+      return App.globalStop();
     }
   });
   App.init(function(position) {
@@ -1304,6 +1345,7 @@ $(function() {
       return App.started = true;
     });
     socket.on("message", function(data) {
+      App.globalResume();
       return App.playTurn(data);
     });
     return socket.on("globalActionPlayed", function(data) {
@@ -1372,5 +1414,7 @@ $(function() {
     }
     return console.log("DONE WITH INIT");
   };
-  return playTurn = function(data) {};
+  return playTurn = function(data) {
+    return App.User.set('actions', 4);
+  };
 });

@@ -73,6 +73,7 @@ $ ->
   DISCOVER_CURE         = 8
   TREAT_DISEASE         = 9
   SHARE_KNOWLEDGE       = 10
+  DISCARD               = 11
 
   # ROLES
   OPS_EXPERT = 1
@@ -645,8 +646,6 @@ $ ->
 
       return ret
 
-
-
     # Will return 0 if action was performed. If not zero, couldn't take action. @@@
     # - TODO: bake in player roles.
     takeAction: (actionId, options) ->
@@ -685,7 +684,6 @@ $ ->
     initialize: ->
       _.bindAll this, 'render', 'moveToCoordinates', 'moveToCity'
       color = TOKEN_COLORS[TOKEN_INDEX++]
-      alert color
       @$el.addClass(color)
     render: ->
       @$el.html(@template ' ')
@@ -726,6 +724,8 @@ $ ->
     # Because players may select multiple cards to trade...
     selectCard: ->
       Backbone.trigger 'card:selected', @model.id
+    makeSelectable: ->
+    makeUnselectable: ->
 
   App.Model.City = Backbone.Model.extend
     initialize: (opt) ->
@@ -851,6 +851,8 @@ $ ->
       console.log @model.toJSON()
       @$el.html(@template @model.toJSON())
       return this
+    makeSelectable: ->
+    makeUnselectable: ->
 
   App.View.PlayersPanel = Backbone.View.extend
     el: '#player-panel'
@@ -930,6 +932,7 @@ $ ->
         <li class="action" data-action="8">Discover Cure</li>
         <li class="action" data-action="9">Treat Disease</li>
         <li class="action" data-action="10">Share Knowledge</li>
+        <li class="action" data-action="11">Discard</li>
       </ul>
     """
     template: (c) -> Mustache.render @__template, c
@@ -943,10 +946,16 @@ $ ->
       return this
     takeAction: (e) ->
       if $(e.currentTarget).hasClass('active')
+        App.ActionListener.actionTaken = false
         @$('.action').removeClass('active')
+        App.PlayersPanel.hide()
+        App.PlayersPanel.makeUnselectable()
+        App.Hand.hide()
+        App.Hand.makeUnselectable()
         App.World.makeNodesUnselectable()
         return
       else
+        App.ActionListener.actionTaken = true
         @$('.action').removeClass('active')
         $(e.currentTarget).toggleClass('active')
         id = parseInt $(e.currentTarget).data('action'), 10
@@ -1034,21 +1043,40 @@ $ ->
       console.log "Right panel took action #{id}"
       if DRIVE <= id <= SHUTTLE_FLIGHT or id == BUILD_RESEARCH_CENTER
         App.World.makeNodesSelectable()
-      else
-        App.World.makeNodesUnselectable()
+
+      if id == PASS
+        App.endTurn()
+
+      if id == SHARE_KNOWLEDGE
+        App.PlayersPanel.show()
+        App.PlayersPanel.makeSelectable()
+
+      if id == DISCARD
+        App.Hand.show()
+        App.Hand.makeSelectable()
 
     citySelected: (id) ->
       alert "Selected city #{id}"
-      @destination = id
-      App.World.makeNodesUnselectable()
+      if App.ActionListener.actionTaken = true
+        App.takeAction(id, {destination: id})
+        App.World.makeNodesUnselectable()
+      else
+        App.World.makeNodesUnselectable()
     cardSelected: (id) ->
       console.log "Selected card #{id}"
-      @dict.cardId = id
-      App.World.makeCardsUnselectable()
+      if App.ActionListener.actionTaken = true
+        App.takeAction(id, {cardId: id})
+        App.Hand.hide()
+      else
+        App.World.makeCardsUnselectable()
     playerSelected: (id) ->
       console.log "Selected player #{id}"
       @dict.traderId = id
-      App.World.makePlayersUnselectable()
+      if App.ActionListener.actionTaken = true
+        App.takeAction(id, {traderId: id})
+        App.PlayersPanel.hide()
+      else
+        App.World.makePlayersUnselectable()
 
     clearSelections: (name) ->
       @dict =
@@ -1076,14 +1104,17 @@ $ ->
       else
         error "not supported"
 
+      $('#right-panel').toggle()
       $('#right-panel-toggle').click (e) ->
         # $(e.currentTarget).toggleClass('red')
         $('#right-panel').toggle()
 
+      $('#hand').toggle()
       $('#hand-toggle').click (e) ->
         # $(e.currentTarget).toggleClass('red')
         $('#hand').toggle()
 
+      $('#player-panel').toggle()
       $('#players-toggle').click (e) ->
         $('#player-panel').toggle()
 
@@ -1108,7 +1139,7 @@ $ ->
       playTurn(data)
 
     takeAction: (actionId, options) ->
-      return window.App.User.takeAction(actionId, options)
+      return App.User.takeAction(actionId, options)
 
     ################################
 
@@ -1129,6 +1160,7 @@ $ ->
     endTurn: ->
       App.ActionListener.clearSelections()
       App.Socket.emit 'endTurn', {playerId: ''}
+      App.globalStop()
 
   ###############
   # Initialize
@@ -1173,6 +1205,7 @@ $ ->
       App.started = true
 
     socket.on "message", (data) ->
+      App.globalResume()
       App.playTurn(data)
 
     socket.on "globalActionPlayed", (data) ->
@@ -1240,6 +1273,7 @@ $ ->
 
   playTurn = (data) ->
 
-
+    # Has four actions to start
+    App.User.set('actions', 4)
 
 
