@@ -53,11 +53,11 @@ $(function() {
   CHARTER_FLIGHT = 3;
   SHUTTLE_FLIGHT = 4;
   PASS = 5;
-  DISPATCH = 1;
-  BUILD_RESEARCH_CENTER = 2;
-  DISCOVER_CURE = 3;
-  TREAT_DISEASE = 4;
-  SHARE_KNOWLEDGE = 5;
+  DISPATCH = 6;
+  BUILD_RESEARCH_CENTER = 7;
+  DISCOVER_CURE = 8;
+  TREAT_DISEASE = 9;
+  SHARE_KNOWLEDGE = 10;
   curedDiseases = [];
   infection = {
     location: 1,
@@ -69,7 +69,7 @@ $(function() {
   };
   playerBasicActions = [DRIVE, DIRECT_FLIGHT, CHARTER_FLIGHT, SHUTTLE_FLIGHT, PASS];
   playerSpecialActions = [DISPATCH, BUILD_RESEARCH_CENTER, DISCOVER_CURE, TREAT_DISEASE, SHARE_KNOWLEDGE];
-  player2SpecialAction = {
+  playerBasicActions = player2SpecialAction = {
     1: DISPATCH,
     2: BUILD_RESEARCH_CENTER,
     3: TREAT_DISEASE
@@ -470,6 +470,9 @@ $(function() {
     }
   });
   App.Model.Card = Backbone.Model.extend();
+  App.Collection.Card = Backbone.Collection.extend({
+    model: App.Model.Card
+  });
   App.View.Card = Backbone.Model.extend({
     tagName: "div",
     className: "card",
@@ -538,15 +541,21 @@ $(function() {
   });
   App.View.RightPanel = Backbone.View.extend({
     el: '#right-panel',
-    __template: "<ul class=\"actions\">\n  <li class=\"label\"><h4>Movement</h4></li>\n  <li class=\"action first\" data-action=\"DRIVE\">Drive</li>\n  <li class=\"action\" data-action=\"DIRECT_FLIGHT\">Direct Flight</li>\n  <li class=\"action\" data-action=\"CHARTER_FLIGHT\">Charter Flight</li>\n  <li class=\"action\" data-action=\"SHUTTLE_FLIGHT\">Shuttle Flight</li>\n  <li class=\"action\" data-action=\"PASS\">Pass</li>\n  <li class=\"label\"><h4>Special Actions</h4></li>\n  <li class=\"action first\" data-action=\"DISPATCH\">Dispatch</li>\n  <li class=\"action\" data-action=\"BUILD_RESEARCH_CENTER\">Build Research Center</li>\n  <li class=\"action\" data-action=\"DISCOVER_CURE\">Discover Cure</li>\n  <li class=\"action\" data-action=\"TREAT_DISEASE\">Treat Disease</li>\n  <li class=\"action\" data-action=\"SHARE_KNOWLEDGE\">Share Knowledge</li>\n</ul>",
+    __template: "<ul class=\"actions\">\n  <li class=\"label\"><h4>Movement</h4></li>\n  <li class=\"action first\" data-action=\"1\">Drive</li>\n  <li class=\"action\" data-action=\"2\">Direct Flight</li>\n  <li class=\"action\" data-action=\"3\">Charter Flight</li>\n  <li class=\"action\" data-action=\"4\">Shuttle Flight</li>\n  <li class=\"action\" data-action=\"5\">Pass</li>\n  <li class=\"label\"><h4>Special Actions</h4></li>\n  <li class=\"action first\" data-action=\"6\">Dispatch</li>\n  <li class=\"action\" data-action=\"7\">Build Research Center</li>\n  <li class=\"action\" data-action=\"8\">Discover Cure</li>\n  <li class=\"action\" data-action=\"9\">Treat Disease</li>\n  <li class=\"action\" data-action=\"10\">Share Knowledge</li>\n</ul>",
     template: function(c) {
       return Mustache.render(this.__template, c);
+    },
+    events: {
+      'click .action': 'takeAction'
     },
     context: function() {
       return this.model.toJSON();
     },
     render: function() {
       return this.$el.html(this.template(_.result(this, 'context')));
+    },
+    takeAction: function() {
+      return App.takeAction;
     }
   });
   _.extend(App, {
@@ -582,7 +591,8 @@ $(function() {
     },
     playTurn: function(data) {
       return playTurn(data);
-    }
+    },
+    takeAction: function(actionId, options) {}
   });
   App.init(function(position) {
     var socket;
@@ -617,7 +627,7 @@ $(function() {
       });
       infectionDeck.push(newCard);
     }
-    App.infectionDeck = infectionDeck;
+    App.infectionDeck = new App.Collection.Card(infectionDeck);
     playerDeck = [];
     _ref1 = data['playerDeck'];
     for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
@@ -628,9 +638,9 @@ $(function() {
       });
       playerDeck.push(newCard);
     }
-    App.playerDeck = playerDeck;
-    App.infectionDiscard = [];
-    App.playerDiscard = [];
+    App.playerDeck = new App.Collection.Card(playerDeck);
+    App.infectionDiscard = new App.Collection.Card();
+    App.playerDiscard = new App.Collection.Card();
     _ref2 = data['infections'];
     for (cityName in _ref2) {
       numInfections = _ref2[cityName];

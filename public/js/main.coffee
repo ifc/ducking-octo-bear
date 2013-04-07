@@ -63,12 +63,11 @@ $ ->
   RED     = 1
   BLUE    = 2
 
-  DRIVE           = 1
-  DIRECT_FLIGHT   = 2
-  CHARTER_FLIGHT  = 3
-  SHUTTLE_FLIGHT  = 4
-  PASS            = 5
-
+  DRIVE                 = 1
+  DIRECT_FLIGHT         = 2
+  CHARTER_FLIGHT        = 3
+  SHUTTLE_FLIGHT        = 4
+  PASS                  = 5
   DISPATCH              = 6
   BUILD_RESEARCH_CENTER = 7
   DISCOVER_CURE         = 8
@@ -422,6 +421,9 @@ $ ->
 
   App.Model.Card = Backbone.Model.extend()
 
+  App.Collection.Card = Backbone.Collection.extend
+    model: App.Model.Card
+
   App.View.Card = Backbone.Model.extend
     tagName: "div"
     className: "card"
@@ -564,8 +566,11 @@ $ ->
     playTurn: (data) ->
       playTurn(data)
 
-    takeAction: (action_int) ->
+    takeAction: (actionId, options) ->
       # User is taking a single action
+      # @@@@@@@@
+
+
 
   ###############
   # Initialize
@@ -604,7 +609,7 @@ $ ->
         'name': name
         'type': 'infection'
       infectionDeck.push(newCard)
-    App.infectionDeck = infectionDeck
+    App.infectionDeck = new App.Collection.Card(infectionDeck)
 
     # Create player card deck.
     playerDeck = []
@@ -613,11 +618,11 @@ $ ->
         'name': name
         'type':  if name.indexOf('EPIDEMIC') >= 0 then "epidemic" else "city card"
       playerDeck.push(newCard)
-    App.playerDeck = playerDeck
+    App.playerDeck = new App.Collection.Card(playerDeck)
 
     # Finally initialize the discard piles ()
-    App.infectionDiscard = []
-    App.playerDiscard = []
+    App.infectionDiscard = new App.Collection.Card()
+    App.playerDiscard = new App.Collection.Card()
 
     # Infect the initial cities.
     for cityName, numInfections of data['infections']
