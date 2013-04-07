@@ -1,3 +1,4 @@
+$ ->
 
   #
   # Async bootstrap. App is only global object
@@ -5,6 +6,9 @@
   # App.Socket
   # App.World
   App =
+
+    ###############################
+
     init: (cb) ->
 
       # Geo locate
@@ -14,17 +18,22 @@
         navigator.geolocation.watchPosition cb, @error
       else
         error "not supported"
-
-    error: (msg) ->
-      log msg
-
-    bootstrap: (data) ->
-      log data
-
+      console.log 'here'
       $('#right-panel-toggle').click (e) ->
         console.log 'Toggling panel'
         $(e.currentTarget).toggleClass('red')
         .toggle()
+
+    ###############################
+
+    error: (msg) ->
+      log msg
+
+    ###############################
+
+    bootstrap: (data) ->
+      log data
+      console.log 'here'
 
       return if App.started
 
