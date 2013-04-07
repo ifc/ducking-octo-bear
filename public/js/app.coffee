@@ -18,11 +18,10 @@ $ ->
         navigator.geolocation.watchPosition cb, @error
       else
         error "not supported"
-      console.log 'here'
+
       $('#right-panel-toggle').click (e) ->
-        console.log 'Toggling panel'
         $(e.currentTarget).toggleClass('red')
-        .toggle()
+        $('#right-panel').toggle()
 
     ###############################
 

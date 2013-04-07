@@ -41,7 +41,8 @@ a {
   background-url: "/img/sphere/yellow.png";
 }
 #stage {
-  position: absolute;
+  z-index: 10;
+  box-sizing: border-box;
   background: white;
   border: 1px solid #efefef;
   padding: 10px;
@@ -54,29 +55,49 @@ a {
   background-repeat: no-repeat;
 }
 #outbreaks {
-  position: absolute;
+  display: inline-block;
+  width: 341.3333333333333px;
+  height: 100px;
+  bottom: 0;
+  box-sizing: border-box;
   background: white;
   border: 1px solid #efefef;
   padding: 10px;
   margin: 0;
+  position: fixed;
 }
 #cures {
-  position: absolute;
+  display: inline-block;
+  width: 341.3333333333333px;
+  height: 100px;
+  bottom: 0;
+  left: 341.3333333333333px;
+  box-sizing: border-box;
   background: white;
   border: 1px solid #efefef;
   padding: 10px;
   margin: 0;
+  position: fixed;
 }
 #right-panel-toggle {
+  z-index: 100;
   position: fixed;
   top: 0;
   right: 0;
   text-align: left;
 }
 #right-panel {
+  z-index: 50;
+  box-sizing: border-box;
+  background: white;
+  border: 1px solid #efefef;
+  padding: 10px;
+  margin: 0;
   position: fixed;
   top: 0;
-  width: 250px;
+  bottom: 0;
+  left: 682.6666666666666px;
+  width: 341.3333333333333px;
 }
 .card {
   height: 24px;

@@ -11,7 +11,7 @@ a {
 }
 
 .panel() {
-  position: absolute;
+  box-sizing: border-box;
   background: white;
   border: 1px solid #efefef;
   padding: 10px;
@@ -38,6 +38,7 @@ a {
 }
 
 #stage {
+  z-index: 10;
   .panel();
   padding: 0;
   width: 1024px;
@@ -48,23 +49,39 @@ a {
 }
 
 #outbreaks {
+  display: inline-block;
+  width: (1024 / 3) * 1px;
+  height: 100px;
+  bottom: 0;
   .panel();
+  position: fixed;
 }
 
 #cures {
+  display: inline-block;
+  width: (1024 / 3) * 1px;
+  height: 100px;
+  bottom: 0;
+  left: (1024/3) * 1px;
   .panel();
+  position: fixed;
 }
 
 #right-panel-toggle {
+  z-index: 100;
   position: fixed;
   top: 0;
   right: 0;
   text-align: left;
 }
 #right-panel {
+  z-index: 50;
+  .panel();
   position: fixed;
   top: 0;
-  width: 250px;
+  bottom: 0;
+  left: 2 * (1024 / 3) * 1px;
+  width: (1024 / 3) * 1px;
 }
 
 .card {
