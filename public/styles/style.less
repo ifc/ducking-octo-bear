@@ -4,6 +4,31 @@ body {
   padding: 0;
   margin: 0;
   font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+  &.paused {
+    > * {
+      opacity: 0.1;
+    }
+    .pause-msg {
+      opacity: 1;
+      display: block !important;
+    }
+  }
+}
+.pause-msg {
+  z-index: 10000;
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  text-align: center;
+  vertical-align: middle;
+  padding-top: 5%;
+  box-sizing: border-box;
+  background: rgba(255,255,255,0.3);
+  display: none;
+  font-size: 50px;
+  color: black;
 }
 
 a {
@@ -16,6 +41,18 @@ a {
   border: 1px solid #efefef;
   padding: 10px;
   margin: 0;
+}
+
+.user-token {
+  z-index: 99999;
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  .rounded(75px);
+  &.black { background: blue; margin-top: 2px; }
+  &.red { background: violet; margin-top: 4px; }
+  &.yellow { background: goldenrod; margin-top: 6px;}
+  &.blue { background: navyblue; margin-top: 8px; }
 }
 
 .city {
@@ -74,6 +111,7 @@ a {
   background: white;
   width: (1200/6) * 1px;
   height: 100px;
+  left: (1200/6) * 1px;
   bottom: 0;
   .panel();
   position: fixed;
@@ -103,13 +141,42 @@ a {
   text-align: left;
 }
 
+////////////////////////////////////////
+
+#player-panel {
+  z-index: 100;
+  position: fixed;
+  top: 310px;
+  left: 50px;
+  width: 700px;
+  height: 150px;
+  .rounded(4px);
+  border: 1px solid #dedede;
+  background: white;
+  .players {
+    list-style: none;
+  }
+  .player {
+    display: inline-block !important;
+    padding-right: 20px;
+    box-sizing: border-box;
+  }
+}
+#players-toggle {
+  position: fixed;
+  z-index: 100;
+  top: 0;
+  right: 185px;
+  text-align: left;
+}
+
 /////////////////////////////////////////
 
 #cures {
   z-index: 100;
   display: inline-block;
   background: white;
-  width: (1200/3) * 1px;
+  width: (1200/4) * 1px;
   height: 100px;
   bottom: 0;
   left: (1200/3) * 1px;
@@ -145,22 +212,64 @@ a {
       background-color: white;
     }
   }
+  .num-infected {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+    width: 34px;
+    height: 10px;
+  }
+  .infected-cube {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    margin-left: 2px;
+    margin-right: 2px;
+    &.RED { background: rgb(219,54,20); }
+    &.BLUE { background: rgb(28,96,124); }
+    &.YELLOW { background: rgb(236,217,14); }
+    &.BLACK { background: black; }
+  }
+  .research-center {
+    width: 10px;
+    height: 10px;
+    &.active { background: #D2B48C;}
+  }
+}
+
+////////////////////////////////////////
+
+#cures {
+  .cure {
+    width: 50px !important;
+    height: 50px !important;
+    display: inline-block !important;
+    opacity: 0.3;
+    &.cured { opacity: 1; }
+  }
 }
 
 .card {
   display: inline-block;
-  .border-radius(5px);
-  .title {
-    width: 100%;
-    height: 24px;
-  }
+  border: 1px solid #dedede;
+  width: 150px;
+  height: 200px;
+  box-sizing: border-box;
+  margin-right: 10px;
   .name {
+    .border-radius(5px);
+    box-sizing: border-box;
+    padding: 10px 5px 0 10px;
     width: 100%;
-    height: 24px;
-    background: yellow;
+    height: 40px;
+    background: black;
+    color: white;
   }
+  .sphere { margin: 5px 10px 0 15px; }
   .map {
     width: 100%;
+    margin-top: 5px;
+    height: 75px;
     background-image: url("/img/mini-map.png");
     background-repeat: no-repeat;
     background-size: contain;

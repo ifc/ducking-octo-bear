@@ -441,13 +441,17 @@ $ ->
       _.each @CityViews, (view) ->
         view.makeUnselectable()
     makeCardsSelectable: ->
-      App.Hand.show().makeSelectable()
+      App.Hand.show()
+      App.Hand.makeSelectable()
     makeCardsUnselectable: ->
-      App.Hand.hide().makeUnselectable()
+      App.Hand.hide()
+      App.Hand.makeUnselectable()
     makePlayersSelectable: ->
-      App.PlayersView.show().makeSelectable()
+      App.PlayersView.show()
+      App.PlayersView.makeSelectable()
     makePlayersUnselectable: ->
-      App.PlayersView.hide().makeUnselectable()
+      App.PlayersView.hide()
+      App.PlayersView.makeUnselectable()
 
   App.Model.User = Backbone.Model.extend
     drive: (destination) ->
@@ -673,6 +677,25 @@ $ ->
 
       return ret
 
+  TOKEN_COLORS = ['black', 'red', 'yellow', 'blue']
+  TOKEN_INDEX = 0
+  App.View.User = Backbone.View.extend
+    tagName: 'div'
+    className: 'user-token'
+    initialize: ->
+      _.bindAll this, 'render', 'moveToCoordinates', 'moveToCity'
+      color = TOKEN_COLORS[TOKEN_INDEX++]
+      alert color
+      @$el.addClass(color)
+    render: ->
+      @$el.html(@template ' ')
+    moveToCoordinates: (x, y)->
+      @$el.css({top: y + 12, left: x + 12})
+    moveToCity: (city) ->
+      console.log city
+      x = city.get('css').left
+      y = city.get('css').top
+      @moveToCoordinates(x, y)
 
   App.Model.Card = Backbone.Model.extend()
 
@@ -682,22 +705,11 @@ $ ->
   App.View.Card = Backbone.View.extend
     tagName: "li"
     className: "card"
-    attributes:
-      width: 75
-      height: 200
     __template: """
-      <div class="title">
-        <div class="sphere {{color}} pull-left"></div>
-      </div>
-      <div class="name">
-        {{name}}
-      </div>
-      <div class="map">
-        &nbsp;
-      </div>
-      <div class="footer">
-        <div class="sphere {{color}} pull-right"></div>
-      </div>
+      <div class="sphere {{color}} pull-left"></div>
+      <div class="name">{{name}}</div>
+      <div class="map">&nbsp;</div>
+      <div class="sphere {{color}} pull-right"></div>
     """
     template: (c) -> Mustache.render @__template, c
     initialize: ->
@@ -708,36 +720,12 @@ $ ->
       @$el.html(@template _.result this, 'context')
       return this
     context: ->
-      name: ''
-      color: ''
+      json = @model.toJSON()
+      json.color = App.World.Cities[@model.get 'name']?.get('color')
+      json
     # Because players may select multiple cards to trade...
     selectCard: ->
-      Backbone.trigger 'card:selected', id
-
-  App.View.Hand = Backbone.Model.extend
-    el: '#hand'
-    className: "card"
-    __template: """
-      <div class="title">
-        <div class="sphere {{color}} pull-left"></div>
-      </div>
-      <div class="name">
-        {{name}}
-      </div>
-      <div class="map">
-        &nbsp;
-      </div>
-      <div class="footer">
-        <div class="sphere {{color}} pull-right"></div>
-      </div>
-    """
-    template: (c) -> Mustache.render @__template, c
-    initialize: ->
-      _.bindAll this, 'render'
-      @collection.on 'reset add remove', @render
-    render: ->
-      @$el.html @template
-      return this
+      Backbone.trigger 'card:selected', @model.id
 
   App.Model.City = Backbone.Model.extend
     initialize: (opt) ->
@@ -776,7 +764,13 @@ $ ->
     tagName: "div"
     className: "cityview"
     __template: """
+      <ul class="num-infected">
+        {{#num_infected}}
+        <li class="infected-cube {{color}}">&nbsp;</li>
+        {{/num_infected}}
+      </ul>
       <div class="sphere {{color}}"></div>
+      <div class="research-center active"></div>
     """
     template: (c) -> Mustache.render @__template, c
     initialize: ->
@@ -789,7 +783,13 @@ $ ->
     setPosition: ->
       @$el.css @model.get('css')
     context: ->
-      @model.toJSON()
+      json = @model.toJSON()
+      num_infected = []
+      console.log "There are #{@model.get('numInfected')} infected"
+      for i in [0..@model.get('numInfected')]
+        num_infected.push({color: @model.get('color')})
+      json.num_infected = num_infected
+      json
     makeSelectable: ->
       @selectable = true
       @$el.addClass('selectable')
@@ -843,10 +843,12 @@ $ ->
     tagName: 'li'
     className: 'player'
     __template: """
-      <h4 data-id="{{id}}">{{name}}</h4>
+      <h4 data-id="{{id}}">Name: {{name}}</h4>
+      <h4>Role: {{role}}</h4>
     """
     template: (c) -> Mustache.render @__template, c
     render: ->
+      console.log @model.toJSON()
       @$el.html(@template @model.toJSON())
       return this
 
@@ -859,10 +861,16 @@ $ ->
       'click .player': 'playerClicked'
       'click .submit': 'submitted'
     template: (c) -> Mustache.render @__template, c
+    initialize: (options )->
+      _.bindAll this, 'playerClicked', 'submitted', 'show', 'hide'
+      @players = options.players
+      @subviews = []
     render: ->
       @$el.html @template({})
-      @collection.forEach (player) =>
-        @$('.players').append (new App.View.Player {model: player}).render().el
+      _.each @players, (player) =>
+        view = (new App.View.Player {model: player}).render()
+        @$('.players').append(view.el)
+        @subviews.push(view)
       return this
     playerClicked: (e) ->
       id = parseInt $(e.currentTarget).data('id')
@@ -872,6 +880,14 @@ $ ->
       $('.player').removeClass('active')
       Backbone.trigger 'player:selected', @playerSelected
       @playerSelected = null
+    show: -> @$el.show()
+    hide: -> @$el.hide()
+    makeSelectable: ->
+      @selectable = true
+      _.each @subviews, (view) -> view.makeSelectable()
+    makeUnselectable: ->
+      @selectable = false
+      _.each @suviews, (view) -> view.makeUnselectable()
 
   App.View.Hand = Backbone.View.extend
     el: '#hand'
@@ -880,12 +896,23 @@ $ ->
     """
     template: (c) -> Mustache.render @__template, c
     initialize: ->
-      _.bindAll this, 'render'
+      _.bindAll this, 'render', 'show', 'hide'
+      @subviews = []
     render: ->
       @$el.html @template({})
       @collection.forEach (card) =>
-        @$('.cards').append (new App.View.Card({model: card})).render().el
+        view = (new App.View.Card({model: card})).render()
+        @$('.cards').append(view.el)
+        @subviews.push(view)
       return this
+    show: -> @$el.show()
+    hide: -> @$el.hide()
+    makeSelectable: ->
+      @selectable = true
+      _.each @subviews, (view) -> view.makeSelectable()
+    makeUnselectable: ->
+      @selectable = false
+      _.each @suviews, (view) -> view.makeUnselectable()
 
   App.View.RightPanel = Backbone.View.extend
     el: '#right-panel'
@@ -926,6 +953,7 @@ $ ->
         console.log "Taking action #{id}"
         Backbone.trigger 'rightPanel:actionTaken', id
 
+  # Backbone.trigger 'increase_infection_rate'
   App.View.InfectionRate = Backbone.View.extend
     el: '#infection_rate'
     __template: """
@@ -935,16 +963,18 @@ $ ->
     template: (c) -> Mustache.render @__template, c
     initialize: ->
       _.bindAll this, 'increaseInfectionRate'
-      @numCards = infectionRate2numCards[0]
+      @rate = 0
+      @numCards = infectionRate2numCards[@rate]
       Backbone.on 'increase_infection_rate', @increaseInfectionRate
     render: ->
       @$el.html @template({num: @numCards})
       return this
     increaseInfectionRate: ->
-      if @rate < 7 then @rate++
+      if @rate < 6 then @rate++
       @numCards = infectionRate2numCards[@rate]
       @render()
 
+  # Backbone.trigger 'outbreak'
   App.View.Infections = Backbone.View.extend
     el: '#outbreaks'
     __template: """
@@ -963,15 +993,33 @@ $ ->
       @numOutbreak++
       @render()
 
+  # Backbone.trigger 'cure', 'YELLOW'
+  App.View.Cures = Backbone.View.extend
+    el: '#cures'
+    __template: """
+      <ul class="cures">
+        <li class="cure sphere RED"></li>
+        <li class="cure sphere YELLOW"></li>
+        <li class="cure sphere BLACK"></li>
+        <li class="cure sphere BLUE"></li>
+      </ul>
+    """
+    template: (c) -> Mustache.render @__template, c
+    initialize: ->
+      _.bindAll this, 'cure'
+      Backbone.on 'cure', @cure
+    render: ->
+      @$el.html @template({cured: @cured})
+      return this
+    cure: (color) ->
+      @$(".cure.#{color.toUpperCase()}").addClass 'cured'
+
   App.View.ActionListener = Backbone.View.extend
     BackboneEvents:
       'rightPanel:actionTaken': 'rightPanelAction'
       'city:selected': 'citySelected'
       'card:selected': 'cardSelected'
-      'city:deselected': 'cityDeselected'
-      'card:deselected': 'cardDeselected'
       'player:selected': 'playerSelected'
-      'player:deselected': 'playerDeselected'
     initialize: ->
       _.bindAll(this)
       _.each @BackboneEvents, (fnname, event) =>
@@ -993,7 +1041,7 @@ $ ->
       alert "Selected city #{id}"
       @destination = id
       App.World.makeNodesUnselectable()
-    cardsSelected: (id) ->
+    cardSelected: (id) ->
       console.log "Selected card #{id}"
       @dict.cardId = id
       App.World.makeCardsUnselectable()
@@ -1029,12 +1077,15 @@ $ ->
         error "not supported"
 
       $('#right-panel-toggle').click (e) ->
-        $(e.currentTarget).toggleClass('red')
+        # $(e.currentTarget).toggleClass('red')
         $('#right-panel').toggle()
 
       $('#hand-toggle').click (e) ->
-        $(e.currentTarget).toggleClass('red')
+        # $(e.currentTarget).toggleClass('red')
         $('#hand').toggle()
+
+      $('#players-toggle').click (e) ->
+        $('#player-panel').toggle()
 
       # World creates a basic graph from
       # cities and updates.
@@ -1062,6 +1113,12 @@ $ ->
     ################################
 
     globalStop: ->
+      $('body').addClass('paused')
+
+    ################################
+
+    globalResume: ->
+      $('body').removeClass('paused')
 
     ################################
 
@@ -1098,11 +1155,20 @@ $ ->
       # App.World.initCardViews()
       App.RightPanel = new App.View.RightPanel {model: App.World}
       App.RightPanel.render()
-      App.PlayersPanel = (new App.View.PlayersPanel {collection: App.Players}).render()
+      App.PlayersPanel = (new App.View.PlayersPanel {players: App.Players}).render()
       App.Hand = (new App.View.Hand {collection: App.User.get('cards')}).render()
       App.InfectionsView = (new App.View.Infections()).render()
       App.InfectionRateView = (new App.View.InfectionRate()).render()
       App.ActionListener = new App.View.ActionListener()
+      App.Cures = (new App.View.Cures()).render()
+
+      ## TODO: This ideally is a map of id : view
+      App.Tokens = []
+      for player in App.Players
+        view = (new App.View.User({model: player}))
+        $('#stage').append(view.el)
+        App.Tokens.push(view)
+        view.moveToCity(App.World.Cities['Atlanta'])
 
       App.started = true
 
@@ -1129,6 +1195,7 @@ $ ->
       playerCards = []
       for cardName in player.get('cards')
         playerCards.push new App.Model.Card
+          id: cardName
           'name': cardName
           'type': 'city card'
       player.set('cards', new App.Collection.Card(playerCards))

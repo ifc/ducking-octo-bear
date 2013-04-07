@@ -1,7 +1,7 @@
 var __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
 $(function() {
-  var App, BLUE, BUILD_RESEARCH_CENTER, CHARTER_FLIGHT, DIRECT_FLIGHT, DISCOVER_CURE, DISPATCH, DISPATCHER, DRIVE, MEDIC, OPS_EXPERT, PASS, RED, REGIONS, RESEARCHER, SCIENTIST, SHARE_KNOWLEDGE, SHUTTLE_FLIGHT, TREAT_DISEASE, createLine, curedDiseases, currentTurn, infection, infectionRate, infectionRate2numCards, initLogic, locationId2Cube, log, numOutbreaks, numPlayers, playTurn, player2SpecialAction, playerBasicActions, playerLocations, playerRoles, playerSpecialActions, researchCenter;
+  var App, BLUE, BUILD_RESEARCH_CENTER, CHARTER_FLIGHT, DIRECT_FLIGHT, DISCOVER_CURE, DISPATCH, DISPATCHER, DRIVE, MEDIC, OPS_EXPERT, PASS, RED, REGIONS, RESEARCHER, SCIENTIST, SHARE_KNOWLEDGE, SHUTTLE_FLIGHT, TOKEN_COLORS, TOKEN_INDEX, TREAT_DISEASE, createLine, curedDiseases, currentTurn, infection, infectionRate, infectionRate2numCards, initLogic, locationId2Cube, log, numOutbreaks, numPlayers, playTurn, player2SpecialAction, playerBasicActions, playerLocations, playerRoles, playerSpecialActions, researchCenter;
 
   window.Game = this;
   App = {
@@ -494,16 +494,20 @@ $(function() {
       });
     },
     makeCardsSelectable: function() {
-      return App.Hand.show().makeSelectable();
+      App.Hand.show();
+      return App.Hand.makeSelectable();
     },
     makeCardsUnselectable: function() {
-      return App.Hand.hide().makeUnselectable();
+      App.Hand.hide();
+      return App.Hand.makeUnselectable();
     },
     makePlayersSelectable: function() {
-      return App.PlayersView.show().makeSelectable();
+      App.PlayersView.show();
+      return App.PlayersView.makeSelectable();
     },
     makePlayersUnselectable: function() {
-      return App.PlayersView.hide().makeUnselectable();
+      App.PlayersView.hide();
+      return App.PlayersView.makeUnselectable();
     }
   });
   App.Model.User = Backbone.Model.extend({
@@ -737,6 +741,37 @@ $(function() {
       return ret;
     }
   });
+  TOKEN_COLORS = ['black', 'red', 'yellow', 'blue'];
+  TOKEN_INDEX = 0;
+  App.View.User = Backbone.View.extend({
+    tagName: 'div',
+    className: 'user-token',
+    initialize: function() {
+      var color;
+
+      _.bindAll(this, 'render', 'moveToCoordinates', 'moveToCity');
+      color = TOKEN_COLORS[TOKEN_INDEX++];
+      alert(color);
+      return this.$el.addClass(color);
+    },
+    render: function() {
+      return this.$el.html(this.template(' '));
+    },
+    moveToCoordinates: function(x, y) {
+      return this.$el.css({
+        top: y + 12,
+        left: x + 12
+      });
+    },
+    moveToCity: function(city) {
+      var x, y;
+
+      console.log(city);
+      x = city.get('css').left;
+      y = city.get('css').top;
+      return this.moveToCoordinates(x, y);
+    }
+  });
   App.Model.Card = Backbone.Model.extend();
   App.Collection.Card = Backbone.Collection.extend({
     model: App.Model.Card
@@ -744,11 +779,7 @@ $(function() {
   App.View.Card = Backbone.View.extend({
     tagName: "li",
     className: "card",
-    attributes: {
-      width: 75,
-      height: 200
-    },
-    __template: "<div class=\"title\">\n  <div class=\"sphere {{color}} pull-left\"></div>\n</div>\n<div class=\"name\">\n  {{name}}\n</div>\n<div class=\"map\">\n  &nbsp;\n</div>\n<div class=\"footer\">\n  <div class=\"sphere {{color}} pull-right\"></div>\n</div>",
+    __template: "<div class=\"sphere {{color}} pull-left\"></div>\n<div class=\"name\">{{name}}</div>\n<div class=\"map\">&nbsp;</div>\n<div class=\"sphere {{color}} pull-right\"></div>",
     template: function(c) {
       return Mustache.render(this.__template, c);
     },
@@ -763,29 +794,14 @@ $(function() {
       return this;
     },
     context: function() {
-      return {
-        name: '',
-        color: ''
-      };
+      var json, _ref;
+
+      json = this.model.toJSON();
+      json.color = (_ref = App.World.Cities[this.model.get('name')]) != null ? _ref.get('color') : void 0;
+      return json;
     },
     selectCard: function() {
-      return Backbone.trigger('card:selected', id);
-    }
-  });
-  App.View.Hand = Backbone.Model.extend({
-    el: '#hand',
-    className: "card",
-    __template: "<div class=\"title\">\n  <div class=\"sphere {{color}} pull-left\"></div>\n</div>\n<div class=\"name\">\n  {{name}}\n</div>\n<div class=\"map\">\n  &nbsp;\n</div>\n<div class=\"footer\">\n  <div class=\"sphere {{color}} pull-right\"></div>\n</div>",
-    template: function(c) {
-      return Mustache.render(this.__template, c);
-    },
-    initialize: function() {
-      _.bindAll(this, 'render');
-      return this.collection.on('reset add remove', this.render);
-    },
-    render: function() {
-      this.$el.html(this.template);
-      return this;
+      return Backbone.trigger('card:selected', this.model.id);
     }
   });
   App.Model.City = Backbone.Model.extend({
@@ -831,7 +847,7 @@ $(function() {
   App.View.City = Backbone.View.extend({
     tagName: "div",
     className: "cityview",
-    __template: "<div class=\"sphere {{color}}\"></div>",
+    __template: "<ul class=\"num-infected\">\n  {{#num_infected}}\n  <li class=\"infected-cube {{color}}\">&nbsp;</li>\n  {{/num_infected}}\n</ul>\n<div class=\"sphere {{color}}\"></div>\n<div class=\"research-center active\"></div>",
     template: function(c) {
       return Mustache.render(this.__template, c);
     },
@@ -849,7 +865,18 @@ $(function() {
       return this.$el.css(this.model.get('css'));
     },
     context: function() {
-      return this.model.toJSON();
+      var i, json, num_infected, _i, _ref;
+
+      json = this.model.toJSON();
+      num_infected = [];
+      console.log("There are " + (this.model.get('numInfected')) + " infected");
+      for (i = _i = 0, _ref = this.model.get('numInfected'); 0 <= _ref ? _i <= _ref : _i >= _ref; i = 0 <= _ref ? ++_i : --_i) {
+        num_infected.push({
+          color: this.model.get('color')
+        });
+      }
+      json.num_infected = num_infected;
+      return json;
     },
     makeSelectable: function() {
       this.selectable = true;
@@ -915,11 +942,12 @@ $(function() {
   App.View.Player = Backbone.View.extend({
     tagName: 'li',
     className: 'player',
-    __template: "<h4 data-id=\"{{id}}\">{{name}}</h4>",
+    __template: "<h4 data-id=\"{{id}}\">Name: {{name}}</h4>\n<h4>Role: {{role}}</h4>",
     template: function(c) {
       return Mustache.render(this.__template, c);
     },
     render: function() {
+      console.log(this.model.toJSON());
       this.$el.html(this.template(this.model.toJSON()));
       return this;
     }
@@ -934,14 +962,23 @@ $(function() {
     template: function(c) {
       return Mustache.render(this.__template, c);
     },
+    initialize: function(options) {
+      _.bindAll(this, 'playerClicked', 'submitted', 'show', 'hide');
+      this.players = options.players;
+      return this.subviews = [];
+    },
     render: function() {
       var _this = this;
 
       this.$el.html(this.template({}));
-      this.collection.forEach(function(player) {
-        return _this.$('.players').append((new App.View.Player({
+      _.each(this.players, function(player) {
+        var view;
+
+        view = (new App.View.Player({
           model: player
-        })).render().el);
+        })).render();
+        _this.$('.players').append(view.el);
+        return _this.subviews.push(view);
       });
       return this;
     },
@@ -956,6 +993,24 @@ $(function() {
       $('.player').removeClass('active');
       Backbone.trigger('player:selected', this.playerSelected);
       return this.playerSelected = null;
+    },
+    show: function() {
+      return this.$el.show();
+    },
+    hide: function() {
+      return this.$el.hide();
+    },
+    makeSelectable: function() {
+      this.selectable = true;
+      return _.each(this.subviews, function(view) {
+        return view.makeSelectable();
+      });
+    },
+    makeUnselectable: function() {
+      this.selectable = false;
+      return _.each(this.suviews, function(view) {
+        return view.makeUnselectable();
+      });
     }
   });
   App.View.Hand = Backbone.View.extend({
@@ -965,18 +1020,41 @@ $(function() {
       return Mustache.render(this.__template, c);
     },
     initialize: function() {
-      return _.bindAll(this, 'render');
+      _.bindAll(this, 'render', 'show', 'hide');
+      return this.subviews = [];
     },
     render: function() {
       var _this = this;
 
       this.$el.html(this.template({}));
       this.collection.forEach(function(card) {
-        return _this.$('.cards').append((new App.View.Card({
+        var view;
+
+        view = (new App.View.Card({
           model: card
-        })).render().el);
+        })).render();
+        _this.$('.cards').append(view.el);
+        return _this.subviews.push(view);
       });
       return this;
+    },
+    show: function() {
+      return this.$el.show();
+    },
+    hide: function() {
+      return this.$el.hide();
+    },
+    makeSelectable: function() {
+      this.selectable = true;
+      return _.each(this.subviews, function(view) {
+        return view.makeSelectable();
+      });
+    },
+    makeUnselectable: function() {
+      this.selectable = false;
+      return _.each(this.suviews, function(view) {
+        return view.makeUnselectable();
+      });
     }
   });
   App.View.RightPanel = Backbone.View.extend({
@@ -1021,7 +1099,8 @@ $(function() {
     },
     initialize: function() {
       _.bindAll(this, 'increaseInfectionRate');
-      this.numCards = infectionRate2numCards[0];
+      this.rate = 0;
+      this.numCards = infectionRate2numCards[this.rate];
       return Backbone.on('increase_infection_rate', this.increaseInfectionRate);
     },
     render: function() {
@@ -1031,7 +1110,7 @@ $(function() {
       return this;
     },
     increaseInfectionRate: function() {
-      if (this.rate < 7) {
+      if (this.rate < 6) {
         this.rate++;
       }
       this.numCards = infectionRate2numCards[this.rate];
@@ -1060,15 +1139,32 @@ $(function() {
       return this.render();
     }
   });
+  App.View.Cures = Backbone.View.extend({
+    el: '#cures',
+    __template: "<ul class=\"cures\">\n  <li class=\"cure sphere RED\"></li>\n  <li class=\"cure sphere YELLOW\"></li>\n  <li class=\"cure sphere BLACK\"></li>\n  <li class=\"cure sphere BLUE\"></li>\n</ul>",
+    template: function(c) {
+      return Mustache.render(this.__template, c);
+    },
+    initialize: function() {
+      _.bindAll(this, 'cure');
+      return Backbone.on('cure', this.cure);
+    },
+    render: function() {
+      this.$el.html(this.template({
+        cured: this.cured
+      }));
+      return this;
+    },
+    cure: function(color) {
+      return this.$(".cure." + (color.toUpperCase())).addClass('cured');
+    }
+  });
   App.View.ActionListener = Backbone.View.extend({
     BackboneEvents: {
       'rightPanel:actionTaken': 'rightPanelAction',
       'city:selected': 'citySelected',
       'card:selected': 'cardSelected',
-      'city:deselected': 'cityDeselected',
-      'card:deselected': 'cardDeselected',
-      'player:selected': 'playerSelected',
-      'player:deselected': 'playerDeselected'
+      'player:selected': 'playerSelected'
     },
     initialize: function() {
       var _this = this;
@@ -1097,7 +1193,7 @@ $(function() {
       this.destination = id;
       return App.World.makeNodesUnselectable();
     },
-    cardsSelected: function(id) {
+    cardSelected: function(id) {
       console.log("Selected card " + id);
       this.dict.cardId = id;
       return App.World.makeCardsUnselectable();
@@ -1124,12 +1220,13 @@ $(function() {
         error("not supported");
       }
       $('#right-panel-toggle').click(function(e) {
-        $(e.currentTarget).toggleClass('red');
         return $('#right-panel').toggle();
       });
       $('#hand-toggle').click(function(e) {
-        $(e.currentTarget).toggleClass('red');
         return $('#hand').toggle();
+      });
+      $('#players-toggle').click(function(e) {
+        return $('#player-panel').toggle();
       });
       return App.World = new App.Model.World({
         Regions: REGIONS
@@ -1151,7 +1248,12 @@ $(function() {
     takeAction: function(actionId, options) {
       return window.App.User.takeAction(actionId, options);
     },
-    globalStop: function() {},
+    globalStop: function() {
+      return $('body').addClass('paused');
+    },
+    globalResume: function() {
+      return $('body').removeClass('paused');
+    },
     playActionCard: function(data) {},
     endTurn: function() {
       App.ActionListener.clearSelections();
@@ -1170,6 +1272,8 @@ $(function() {
     socket = io.connect("http://localhost:3000");
     App.Socket = socket;
     socket.on("bootstrap", function(data) {
+      var player, view, _i, _len, _ref;
+
       App.bootstrap(data);
       App.World.initGraph();
       App.RightPanel = new App.View.RightPanel({
@@ -1177,7 +1281,7 @@ $(function() {
       });
       App.RightPanel.render();
       App.PlayersPanel = (new App.View.PlayersPanel({
-        collection: App.Players
+        players: App.Players
       })).render();
       App.Hand = (new App.View.Hand({
         collection: App.User.get('cards')
@@ -1185,6 +1289,18 @@ $(function() {
       App.InfectionsView = (new App.View.Infections()).render();
       App.InfectionRateView = (new App.View.InfectionRate()).render();
       App.ActionListener = new App.View.ActionListener();
+      App.Cures = (new App.View.Cures()).render();
+      App.Tokens = [];
+      _ref = App.Players;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        player = _ref[_i];
+        view = new App.View.User({
+          model: player
+        });
+        $('#stage').append(view.el);
+        App.Tokens.push(view);
+        view.moveToCity(App.World.Cities['Atlanta']);
+      }
       return App.started = true;
     });
     socket.on("message", function(data) {
@@ -1212,6 +1328,7 @@ $(function() {
       for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
         cardName = _ref1[_j];
         playerCards.push(new App.Model.Card({
+          id: cardName,
           'name': cardName,
           'type': 'city card'
         }));
