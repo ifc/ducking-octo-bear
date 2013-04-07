@@ -224,6 +224,7 @@ a {
 }
 .cityview {
   z-index: 98;
+  max-width: 55px;
   position: absolute;
   background-color: transparent;
 }
@@ -238,6 +239,14 @@ a {
   width: 34px;
   height: 10px;
   float: left;
+}
+
+.cityview .city-name {
+  line-height: 9px;
+  font-size: 9px;
+  color: #777;
+  background: rgba(250, 250, 250, 0.7);
+  padding: 1px;
 }
 .cityview .infected-cube {
   width: 6px;
@@ -259,9 +268,13 @@ a {
 .cityview .research-center {
   width: 10px;
   height: 10px;
+  margin-left: 2px;
+  float: left;
+  display: none;
 }
 .cityview .research-center.active {
   background: #D2B48C;
+  display: inline !important;
 }
 #cures .cure {
   width: 50px !important;

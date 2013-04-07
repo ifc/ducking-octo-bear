@@ -376,7 +376,7 @@ $ ->
       "St. Petersburg":
         connections: ["Essen", "Istanbul", "Moscow"]
         css:
-          top: 140
+          top: 125
           left: 675
 
       Madrid:
@@ -815,7 +815,11 @@ $ ->
         {{/num_infected}}
       </ul>
       <div class="sphere {{color}}"></div>
-      <div class="research-center {{#researchCenter}}active{{/researchCenter}}"></div>
+      <div class="city-name">
+        <div class="research-center {{#researchCenter}}active{{/researchCenter}}">
+        </div>
+        {{name}}
+      </div>
     """
     template: (c) -> Mustache.render @__template, c
     initialize: ->
