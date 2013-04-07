@@ -127,12 +127,17 @@ function getBootstrapObject(sessionId) {
   };
 }
 
+function onEndTurn(data) {
+  console.log('==========================');
+  console.log('endTurn got data => ', data);
+  console.log('==========================');
+}
 
-
-
-
-
-
+function onMessage(data) {
+  console.log('==========================');
+  console.log('onMessage got data => ', data);
+  console.log('==========================');
+}
 
 module.exports = function(app) {
 
@@ -142,9 +147,9 @@ module.exports = function(app) {
   // Socket.IO
   io.sockets.on('connection', function(socket) {
     socket.emit('bootstrap', getBootstrapObject(socket.id));
-    socket.on('my other event', function (data) {
-      console.log(data);
-    });
+
+    socket.on('message', onMessage);
+    socket.on('endTurn', onEndTurn);
   });
 
 };
