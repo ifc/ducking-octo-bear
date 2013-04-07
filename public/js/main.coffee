@@ -425,7 +425,23 @@ $ ->
       _.each @CityViews, (view) ->
         view.makeUnselectable()
 
-  App.Model.User = Backbone.Model.extend()
+  App.Model.User = Backbone.Model.extend
+    # Will return 0 if action was performed. If not zero, couldn't take action. @@@
+    takeAction: (actionId, options) ->
+
+      if actionId == DRIVE
+      else if actionId == DIRECT_FLIGHT
+      else if actionId == CHARTER_FLIGHT
+      else if actionId == SHUTTLE_FLIGHT
+      else if actionId == PASS
+      else if actionId == DISPATCH
+      else if actionId == BUILD_RESEARCH_CENTER
+      else if actionId == DISCOVER_CURE
+      else if actionId == TREAT_DISEASE
+      else if actionId == SHARE_KNOWLEDGE
+      else
+        return -1
+
 
   App.Model.Card = Backbone.Model.extend()
 
@@ -593,21 +609,7 @@ $ ->
       playTurn(data)
 
     takeAction: (actionId, options) ->
-      # User is taking a single action
-      # @@@@@@@@
-
-      """
-      DRIVE                 = 1
-      DIRECT_FLIGHT         = 2
-      CHARTER_FLIGHT        = 3
-      SHUTTLE_FLIGHT        = 4
-      PASS                  = 5
-      DISPATCH              = 6
-      BUILD_RESEARCH_CENTER = 7
-      DISCOVER_CURE         = 8
-      TREAT_DISEASE         = 9
-      SHARE_KNOWLEDGE       = 10
-      """
+      return window.App.user.takeAction(actionId, options)
 
 
 

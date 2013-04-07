@@ -467,9 +467,45 @@ $(function() {
         view.setPosition();
         return _this.CityViews.push(view);
       });
+    },
+    makeNodesSelectable: function() {
+      return _.each(this.CityViews, function(view) {
+        return view.makeSelectable();
+      });
+    },
+    makeUnselectable: function() {
+      return _.each(this.CityViews, function(view) {
+        return view.makeUnselectable();
+      });
     }
   });
-  App.Model.User = Backbone.Model.extend();
+  App.Model.User = Backbone.Model.extend({
+    takeAction: function(actionId, options) {
+      if (actionId === DRIVE) {
+
+      } else if (actionId === DIRECT_FLIGHT) {
+
+      } else if (actionId === CHARTER_FLIGHT) {
+
+      } else if (actionId === SHUTTLE_FLIGHT) {
+
+      } else if (actionId === PASS) {
+
+      } else if (actionId === DISPATCH) {
+
+      } else if (actionId === BUILD_RESEARCH_CENTER) {
+
+      } else if (actionId === DISCOVER_CURE) {
+
+      } else if (actionId === TREAT_DISEASE) {
+
+      } else if (actionId === SHARE_KNOWLEDGE) {
+
+      } else {
+        return -1;
+      }
+    }
+  });
   App.Model.Card = Backbone.Model.extend();
   App.Collection.Card = Backbone.Collection.extend({
     model: App.Model.Card
@@ -535,6 +571,14 @@ $(function() {
     },
     context: function() {
       return this.model.toJSON();
+    },
+    makeSelectable: function() {
+      this.selectable = true;
+      return this.$el.addClass('selectable');
+    },
+    makeUnselectable: function() {
+      this.selectable = false;
+      return this.$el.removeClass('selectable');
     }
   });
   App.Collection.City = Backbone.Collection.extend({
@@ -555,8 +599,22 @@ $(function() {
     render: function() {
       return this.$el.html(this.template(_.result(this, 'context')));
     },
-    takeAction: function() {
-      return App.takeAction;
+    takeAction: function(e) {
+      var id;
+
+      id = parseInt($(e.currentTarget).data('action'), 10);
+      return Backbone.trigger('rightPanel:actionTaken', id);
+    }
+  });
+  App.View.ActionListener = Backbone.View.extend({
+    initialize: function() {
+      _.bindAll(this);
+      return Backbone.on('rightPanel:actionTaken', this.rightPanelAction);
+    },
+    rightPanelAction: function(id) {
+      if ((DRIVE <= id && id <= SHUTTLE_FLIGHT)) {
+        return App.World.makeNodesSelectable();
+      }
     }
   });
   _.extend(App, {
@@ -577,7 +635,8 @@ $(function() {
       App.RightPanel = new App.View.RightPanel({
         model: App.World
       });
-      return App.RightPanel.render();
+      App.RightPanel.render();
+      return App.ActionListener = new App.View.ActionListener();
     },
     error: function(msg) {
       return log(msg);
@@ -593,7 +652,9 @@ $(function() {
     playTurn: function(data) {
       return playTurn(data);
     },
-    takeAction: function(action_int) {}
+    takeAction: function(actionId, options) {
+      return window.App.user.takeAction(actionId, options);
+    }
   });
   App.init(function(position) {
     var socket;
