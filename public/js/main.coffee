@@ -111,32 +111,32 @@ $ ->
       "Los Angeles":
         connections: ["Sydney", "San Francisco", "Chicago", "Mexico City"]
         css:
-          top: 30
-          left: 40
+          top: 280
+          left: 155
 
       "Mexico City":
         connections: ["Los Angeles", "Chicago", "Miami", "Bogota", "Lima"]
         css:
-          top: 50
-          left: 60
+          top: 305
+          left: 205
 
       Miami:
         connections: ["Mexico City", "Atlanta", "Washington", "Bogota"]
         css:
-          top: 125
-          left: 400
+          top: 268
+          left: 270
 
       Bogota:
         connections: ["Mexico City", "Miami", "Sao Paulo", "Buenos Aires", "Lima"]
         css:
-          top: 30
-          left: 40
+          top: 320
+          left: 275
 
       Lima:
         connections: ["Mexico City", "Bogota", "Santiago"]
         css:
-          top: 30
-          left: 40
+          top: 380
+          left: 260
 
       Santiago:
         connections: ["Lima"]
@@ -147,8 +147,8 @@ $ ->
       "Buenos Aires":
         connections: ["Bogota", "Sao Paulo"]
         css:
-          top: 30
-          left: 40
+          top: 455
+          left: 330
 
       "Sao Paulo":
         connections: ["Bogota", "Madrid", "Lagos", "Buenos Aires"]
@@ -330,8 +330,8 @@ $ ->
       "San Francisco":
         connections: ["Tokyo", "Manila", "Chicago", "Los Angeles"]
         css:
-          top: 30
-          left: 40
+          top: 222
+          left: 135
 
       Chicago:
         connections: ["San Francisco", "Los Angeles", "Mexico City", "Atlanta", "Toronto"]
