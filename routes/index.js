@@ -96,7 +96,7 @@ function getPlayerDeck(numPlayers, numEpidemicCards) {
   }
 
   // Now insert the epidemic cards (roughly one per 'bucket').
-  var bucketSize = Math.floor(deck.length);
+  var bucketSize = Math.floor(deck.length) / numEpidemicCards;
   for (i = 0; i < numEpidemicCards; i++) {
     var epiLocation = Math.floor((bucketSize * i) + Math.random() * bucketSize);
     deck.splice(epiLocation, 0, "EPIDEMIC!");
@@ -115,7 +115,8 @@ exports.bootstrap = function(req, res){
   var sessionId = req['sessionID'];
   var playerSessionIds = [sessionId];
 
-  var playerCards = getPlayerDeck(playerSessionIds.length);
+  // For now, just 5 epidemic cards.
+  var playerCards = getPlayerDeck(playerSessionIds.length, 5);
   var players = [];
   for (var i = 0; i < playerSessionIds.length; i++) {
     players.push({
