@@ -137,10 +137,19 @@ a {
   height: 24px;
 }
 .actions {
-  border: 1px solid #dedede;
-  padding: 15px 20px 15px;
+  list-style: none;
+  padding: 0;
   margin: 0;
+}
+.action {
+  cursor: pointer;
+  border-bottom: 1px solid #dedede;
+  padding: 5px 10px 5px;
+  margin-bottom: 1px;
   width: 100%;
+}
+.action.first {
+  border-top: 1px solid #dedede;
 }
 .pull-right {
   float: right;

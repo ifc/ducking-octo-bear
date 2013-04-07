@@ -69,11 +69,11 @@ $ ->
   SHUTTLE_FLIGHT  = 4
   PASS            = 5
 
-  DISPATCH              = 1
-  BUILD_RESEARCH_CENTER = 2
-  DISCOVER_CURE         = 3
-  TREAT_DISEASE         = 4
-  SHARE_KNOWLEDGE       = 5
+  DISPATCH              = 6
+  BUILD_RESEARCH_CENTER = 7
+  DISCOVER_CURE         = 8
+  TREAT_DISEASE         = 9
+  SHARE_KNOWLEDGE       = 10
 
 
   curedDiseases = []
@@ -87,6 +87,7 @@ $ ->
 
   playerBasicActions = [DRIVE, DIRECT_FLIGHT, CHARTER_FLIGHT, SHUTTLE_FLIGHT, PASS]
   playerSpecialActions = [DISPATCH, BUILD_RESEARCH_CENTER, DISCOVER_CURE, TREAT_DISEASE, SHARE_KNOWLEDGE]
+  playerBasicActions =
   player2SpecialAction =
     1: DISPATCH
     2: BUILD_RESEARCH_CENTER
@@ -489,11 +490,30 @@ $ ->
   App.View.RightPanel = Backbone.View.extend
     el: '#right-panel'
     __template: """
-      <h1>
+      <ul class="actions">
+        <li class="label"><h4>Movement</h4></li>
+        <li class="action first" data-action="DRIVE">Drive</li>
+        <li class="action" data-action="DIRECT_FLIGHT">Direct Flight</li>
+        <li class="action" data-action="CHARTER_FLIGHT">Charter Flight</li>
+        <li class="action" data-action="SHUTTLE_FLIGHT">Shuttle Flight</li>
+        <li class="action" data-action="PASS">Pass</li>
+        <li class="label"><h4>Special Actions</h4></li>
+        <li class="action first" data-action="DISPATCH">Dispatch</li>
+        <li class="action" data-action="BUILD_RESEARCH_CENTER">Build Research Center</li>
+        <li class="action" data-action="DISCOVER_CURE">Discover Cure</li>
+        <li class="action" data-action="TREAT_DISEASE">Treat Disease</li>
+        <li class="action" data-action="SHARE_KNOWLEDGE">Share Knowledge</li>
+      </ul>
     """
     template: (c) -> Mustache.render @__template, c
+    events:
+      'click .action': 'takeAction'
     context: -> @model.toJSON()
-    render: -> @$el.html @template _.result this, 'context'
+    render: ->
+      @$el.html @template _.result this, 'context'
+    takeAction: ->
+
+      App.takeAction
   #
   # Async bootstrap. App is only global object
   #
@@ -522,6 +542,8 @@ $ ->
       App.World = new App.Model.World
         Regions: REGIONS
       App.World.initGraph()
+      App.RightPanel = new App.View.RightPanel {model: App.World}
+      App.RightPanel.render()
 
     ###############################
 
@@ -537,13 +559,14 @@ $ ->
       return if App.started
 
       # UI Shit
-      #right_panel = new RightPanel
-      #  model: App.World
 
       initLogic(data)
 
     playTurn: (data) ->
       playTurn(data)
+
+    takeAction: (action_int) ->
+      # User is taking a single action
 
   ###############
   # Initialize
