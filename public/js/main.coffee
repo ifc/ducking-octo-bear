@@ -872,6 +872,14 @@ $ ->
 
     ################################
 
+    globalStop: ->
+
+    ################################
+
+    playActionCard: (data) ->
+
+    ################################
+
     endTurn: ->
       App.ActionListener.clearSelections()
       App.Socket.emit 'endTurn', {playerId: ''}
