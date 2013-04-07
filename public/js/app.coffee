@@ -46,7 +46,8 @@
 
     # not sure why we're hitting this twice in FF,
     # I think it's to do with a cached result coming back
-    return if $("#status").hasClass("success")
+    return if App.succeeded
+    App.succeeded = true
     # x = position.coords.latitude
     # y = position.coords.longitude
     socket = io.connect("http://localhost:3000")
