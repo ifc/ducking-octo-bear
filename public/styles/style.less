@@ -24,6 +24,7 @@ a {
 }
 
 .line{
+  z-index: 1;
   transform-origin: 0 100%;
   height: 3px; /* Line width of 3 */
   background: #000; /* Black fill */
@@ -48,7 +49,7 @@ a {
   padding: 0;
   width: 1200px;
   height: 768px;
-  background: url("http://clipartist.info/www/COLOURINGBOOK.ORG/Letters/W/world_map_1_coloring_book_colouring-2555px.png");
+  background: url("/img/world-map.png");
   background-size: contain;
   background-repeat: no-repeat;
 }
@@ -89,6 +90,7 @@ a {
   width: (1200 / 3) * 1px;
 }
 .cityview {
+  z-index: 99;
   position: absolute;
   background-color: transparent;
   &.selectable {

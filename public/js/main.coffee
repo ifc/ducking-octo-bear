@@ -74,6 +74,13 @@ $ ->
   TREAT_DISEASE         = 9
   SHARE_KNOWLEDGE       = 10
 
+  # ROLES
+  OPS_EXPERT = 1
+  RESEARCHER = 2
+  MEDIC = 3
+  SCIENTIST = 4
+  DISPATCHER = 5
+
   curedDiseases = []
   infection = #?????????????????????????????
     location: 1
@@ -407,6 +414,7 @@ $ ->
       _.each @Regions, (Region, Color) =>
         _.each Region, (obj, name) =>
           City = new App.Model.City(obj)
+          City.set 'id', name
           City.set 'color', Color
           City.set 'name', name
           @Cities[name] = City
@@ -419,6 +427,19 @@ $ ->
         $('#stage').append(view.render().el)
         view.setPosition()
         @CityViews.push(view)
+        # draw lines
+      _.each @CityViews, (view) =>
+        view.drawConnections()
+    initPlayerViews: ->
+      @PlayerViews = []
+      _.each @Players, (Player) =>
+        view = new App.View.Player {model: Player}
+        @PlayerViews.push(view)
+    initCardViews: ->
+      @CardViews = []
+      App.CardCollection.forEach (Card) =>
+        view = new App.View.Card {model: Card}
+        @CardViews.push(view)
     makeNodesSelectable: ->
       console.log "World nodes made selectable"
       _.each @CityViews, (view) ->
@@ -426,24 +447,35 @@ $ ->
     makeNodesUnselectable: ->
       _.each @CityViews, (view) ->
         view.makeUnselectable()
+    makeCardsSelectable: ->
+      _.each @CardViews, (view) ->
+        view.makeSelectable()
+    makeCardsUnselectable: ->
+      _.each @CardViews, (view) ->
+        view.makeUnselectable()
+    makePlayersSelectable: ->
+      _.each @PlayerViews, (view) ->
+        view.makeSelectable()
+    makePlayersUnselectable: ->
+      _.each @PlayerViews, (view) ->
+        view.makeUnselectable()
+
+  App.Model.Player = Backbone.Model.extend
+    validate: -> false if not @has 'name' or not @has 'id'
 
   App.Model.User = Backbone.Model.extend
-
     drive: (destination) ->
       ret = 0
       curLocation = @get('location')
-
       if destination in curLocation.get('connections')
         @set('location', destination)
       else
         alert("Driving to an unconnected city?")
         ret = -1
-
       return ret
 
     directFlight: (destination) ->
       ret = -1
-
       myCards = @get('cards')
       for card in myCards
         if card.get('name') == destination.get('name')
@@ -679,11 +711,18 @@ $ ->
       </div>
     """
     template: (c) -> Mustache.render @__template, c
+    initialize: ->
+      _.bindAll this, 'selectCard'
+    events:
+      'click': 'selectCard'
     render: ->
       @$el.html @template _.result this, 'context'
     context: ->
       name: ''
       color: ''
+    # Because players may select multiple cards to trade...
+    selectCard: ->
+      Backbone.trigger 'card:selected', id
 
   App.Model.City = Backbone.Model.extend
     initialize: (opt) ->
@@ -742,9 +781,46 @@ $ ->
     makeUnselectable: ->
       @selectable = false
       @$el.removeClass('selectable')
-    onClick: (e) ->
+    onClick: ->
       return if not @selectable
-      Backbone.trigger 'city:selected', @model.name
+      Backbone.trigger 'city:selected', @model.id
+    drawConnections: ->
+      w = @$el.width() / 2
+      h = @$el.height() / 2
+      _.each @model.get('connections'), (city) =>
+        if not city.get('connsAlreadyDrawn')
+          x1 = @model.get('css').left + w
+          y1 = @model.get('css').top + h
+          x2 = city.get('css').left + w
+          y2 = city.get('css').top + h
+          console.log @model.get('name'), city.get('name')
+          console.log x1, y1, x2, y2
+          length = Math.max(x1-x2, x2-x1)
+          if length > $('#stage').width()
+            # draw two lines as we 'wrap around' the board
+            leftMost = null
+            rightMost = null
+            if x1 > x3
+              leftMost = @model
+              rightMost = city
+            else
+              leftMost = city
+              rightMost = @model
+            # draw line from left edge
+            x1 = 0
+            y1 = rightMost.get('css').top + h
+            x2 = leftMost.get('css').left + w
+            y2 = leftMost.get('css').top + h
+            createLine(x1, y1, x2, y2)
+            # draw line to right edge
+            x1 = rightMost.get('css').left + w
+            y1 = rightMost.get('css').top + h
+            x2 = $('#stage').width()
+            y2 = leftMost.get('css').top + h
+            createLine(x1, y1, x2, y2)
+          else
+            createLine(x1, y1, x2, y2)
+          @model.set 'connsAlreadyDrawn', true
 
   App.Collection.City = Backbone.Collection.extend
     model: App.Model.City
@@ -816,9 +892,11 @@ $ ->
       _.bindAll(this)
       _.each @BackboneEvents, (fnname, event) =>
         Backbone.on event, @[fnname]
-      @citiesSelected = []
-      @cardsSelected = []
-      @userSelected = []
+      @dict =
+        destination: null
+        cardId: null
+        traderId: null
+        discardCardId: null
 
     rightPanelAction: (id) ->
       console.log "Right panel took action #{id}"
@@ -827,44 +905,25 @@ $ ->
       else
         App.World.makeNodesUnselectable()
 
-    citySelected: (name) ->
-      @citiesSelected.push App.World.Cities[name]
-
-    cityDeselected: (name) ->
-      spliceOutIndex = -1
-      for i, city in @citiesSelected
-        if city.get('name') == name
-          @citiesSelected.splice(i, 1)
-          break
-
-    cardsSelected: (name) ->
-      @cardsSelected.push App.Cards[name]
-
-    cardsDeselected: (name) ->
-      for i, card in @cardsSelected
-        if card.get('name') == name
-          @cardsSelected.splice(i, 1)
-          break
+    citySelected: (id) ->
+      console.log "Selected city #{id}"
+      @destination = id
+      App.World.makeNodesUnselectable()
+    cardsSelected: (id) ->
+      console.log "Selected card #{id}"
+      @dict.cardId = id
+      App.World.makeCardsUnselectable()
+    playerSelected: (id) ->
+      console.log "Selected player #{id}"
+      @dict.traderId = id
+      App.World.makePlayersUnselectable()
 
     clearSelections: (name) ->
-      @citiesSelected = []
-      @cardsSelected = []
-      @userSelected = []
-
-    playerSelected: (name) ->
-      @playerSelected.push App.Players[name]
-
-    playerDeselected: (name) ->
-      for i, card in @cardsSelected
-        if card.get('name') == name
-          @cardsSelected.splice(i, 1)
-          break
-
-    generateDictionary: ->
-      destination: 1
-      cardId: 1
-      traderId: 1
-      discardCardId: 1
+      @dict =
+        destination: null
+        cardId: null
+        traderId: null
+        discardCardId: null
 
   #
   # Async bootstrap. App is only global object
@@ -894,6 +953,8 @@ $ ->
       App.World = new App.Model.World
         Regions: REGIONS
       App.World.initGraph()
+      # App.World.initPlayerViews()
+      # App.World.initCardViews()
       App.RightPanel = new App.View.RightPanel {model: App.World}
       App.RightPanel.render()
       App.ActionListener = new App.View.ActionListener()
