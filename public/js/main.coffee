@@ -420,7 +420,7 @@ $ ->
         view.setPosition()
         @CityViews.push(view)
 
-  App.Model.Card = Backbone.Model.extend
+  App.Model.Card = Backbone.Model.extend()
 
   App.View.Card = Backbone.Model.extend
     tagName: "div"
@@ -575,10 +575,35 @@ $ ->
     console.log(data)
     App = window.App
 
-    # Infect the initiali cities.
+    # Create infection card deck.
+    infectionDeck = []
+    for name in data['infectionDeck']
+      newCard = new App.Model.Card
+        'name': name
+        'type': 'infection'
+      infectionDeck.push(newCard)
+    App.infectionDeck = infectionDeck
+
+    # Create player card deck.
+    playerDeck = []
+    for name in data['playerDeck']
+      newCard = new App.Model.Card
+        'name': name
+        'type':  if name.indexOf('EPIDEMIC') >= 0 then "epidemic" else "city card"
+      playerDeck.push(newCard)
+    App.playerDeck = playerDeck
+
+    # Finally initialize the discard piles ()
+    App.infectionDiscard = []
+    App.playerDiscard = []
+
+    # Infect the initial cities.
     for cityName, numInfections of data['infections']
       #console.log(cityName + " " + numInfections)
       App.World.Cities[cityName].infect(numInfections)
+
+    console.log("DONE WITH INIT")
+    console.log(App)
 
 
   playTurn = (data) ->

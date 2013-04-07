@@ -469,7 +469,7 @@ $(function() {
       });
     }
   });
-  App.Model.Card = Backbone.Model.extend;
+  App.Model.Card = Backbone.Model.extend();
   App.View.Card = Backbone.Model.extend({
     tagName: "div",
     className: "card",
@@ -503,7 +503,6 @@ $(function() {
       return delete this['connections'];
     },
     infect: function(numCubes) {
-      console.log(this.get('name') + "  --- " + numCubes);
       this.addDiseaseCubes(numCubes);
       if (this.get("diseaseCubes") > 3) {
         this.set("diseaseCubes", 3);
@@ -599,19 +598,42 @@ $(function() {
     });
   });
   initLogic = function(data) {
-    var cityName, numInfections, _ref, _results;
+    var cityName, infectionDeck, name, newCard, numInfections, playerDeck, _i, _j, _len, _len1, _ref, _ref1, _ref2;
 
     console.log("HERE WE ARE IN INIT LOGIC");
     console.log(data);
     App = window.App;
-    _ref = data['infections'];
-    _results = [];
-    for (cityName in _ref) {
-      numInfections = _ref[cityName];
-      console.log(cityName + " " + numInfections);
-      _results.push(App.World.Cities[cityName].infect(numInfections));
+    infectionDeck = [];
+    _ref = data['infectionDeck'];
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      name = _ref[_i];
+      newCard = new App.Model.Card({
+        'name': name,
+        'type': 'infection'
+      });
+      infectionDeck.push(newCard);
     }
-    return _results;
+    App.infectionDeck = infectionDeck;
+    playerDeck = [];
+    _ref1 = data['playerDeck'];
+    for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+      name = _ref1[_j];
+      newCard = new App.Model.Card({
+        'name': name,
+        'type': name.indexOf('EPIDEMIC') >= 0 ? "epidemic" : "city card"
+      });
+      playerDeck.push(newCard);
+    }
+    App.playerDeck = playerDeck;
+    App.infectionDiscard = [];
+    App.playerDiscard = [];
+    _ref2 = data['infections'];
+    for (cityName in _ref2) {
+      numInfections = _ref2[cityName];
+      App.World.Cities[cityName].infect(numInfections);
+    }
+    console.log("DONE WITH INIT");
+    return console.log(App);
   };
   return playTurn = function(data) {};
 });
