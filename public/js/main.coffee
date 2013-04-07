@@ -831,7 +831,7 @@ $ ->
       json = @model.toJSON()
       num_infected = []
       console.log "There are #{@model.get('numInfected')} infected"
-      for i in [0..@model.get('numInfected')]
+      for i in [0...@model.get('diseaseCubes')]
         num_infected.push({color: @model.get('color')})
       json.num_infected = num_infected
       json
