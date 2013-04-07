@@ -23,16 +23,9 @@ $ ->
     5: 4
     6: 4
 
-
   # Game State
   currentTurn = -1 # 1 to numPlayers
   numPlayers = 7 # 1 to 7
-  numOutbreaks = 0
-  infectionRate = 0
-  playerLocations = [4, 59, 3, 4]
-  locationId2Cube =
-    1: 0
-    2: 3
 
   playerRoles =
     Medic:
@@ -81,15 +74,6 @@ $ ->
   MEDIC = 3
   SCIENTIST = 4
   DISPATCHER = 5
-
-  curedDiseases = []
-  infection = #?????????????????????????????
-    location: 1
-    disease: RED
-
-  researchCenter = #?????????????????????
-    location: 1
-    disease: BLUE
 
   playerBasicActions = [DRIVE, DIRECT_FLIGHT, CHARTER_FLIGHT, SHUTTLE_FLIGHT, PASS]
   playerSpecialActions = [DISPATCH, BUILD_RESEARCH_CENTER, DISCOVER_CURE, TREAT_DISEASE, SHARE_KNOWLEDGE]
@@ -412,7 +396,9 @@ $ ->
 
   App.Model.World = Backbone.Model.extend
     initialize: (options) ->
+      # Setting a bunch of state variables here. Easier to toJSON().
       @set('curedDiseases', [])
+
       @Regions = options.Regions
       @Cities = {}
       _.each @Regions, (Region, Color) =>
@@ -966,7 +952,7 @@ $ ->
   App.View.InfectionRate = Backbone.View.extend
     el: '#infection_rate'
     __template: """
-      <h4 style="opacity: 0.5">Infection Rate</h4>
+      <h4 style="opacity: 0.5; margin-top: 5px;">Infection Rate</h4>
       <h2>{{num}}</h2>
     """
     template: (c) -> Mustache.render @__template, c
@@ -987,7 +973,7 @@ $ ->
   App.View.Infections = Backbone.View.extend
     el: '#outbreaks'
     __template: """
-      <h4 style="opacity: 0.5">Outbreaks</h4>
+      <h4 style="opacity: 0.5; margin-top: 5px;">Outbreaks</h4>
       <h2>{{num}} out of 8</h2>
     """
     template: (c) -> Mustache.render @__template, c
@@ -1272,6 +1258,10 @@ $ ->
     console.log("DONE WITH INIT")
 
   playTurn = (data) ->
+
+    alert('here in playTurn')
+    console.log("@@@")
+    console.log(data)
 
     # Has four actions to start
     App.User.set('actions', 4)

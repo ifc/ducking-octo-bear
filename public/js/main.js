@@ -1,7 +1,7 @@
 var __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
 $(function() {
-  var App, BLUE, BUILD_RESEARCH_CENTER, CHARTER_FLIGHT, DIRECT_FLIGHT, DISCARD, DISCOVER_CURE, DISPATCH, DISPATCHER, DRIVE, MEDIC, OPS_EXPERT, PASS, RED, REGIONS, RESEARCHER, SCIENTIST, SHARE_KNOWLEDGE, SHUTTLE_FLIGHT, TOKEN_COLORS, TOKEN_INDEX, TREAT_DISEASE, createLine, curedDiseases, currentTurn, infection, infectionRate, infectionRate2numCards, initLogic, locationId2Cube, log, numOutbreaks, numPlayers, playTurn, player2SpecialAction, playerBasicActions, playerLocations, playerRoles, playerSpecialActions, researchCenter;
+  var App, BLUE, BUILD_RESEARCH_CENTER, CHARTER_FLIGHT, DIRECT_FLIGHT, DISCARD, DISCOVER_CURE, DISPATCH, DISPATCHER, DRIVE, MEDIC, OPS_EXPERT, PASS, RED, REGIONS, RESEARCHER, SCIENTIST, SHARE_KNOWLEDGE, SHUTTLE_FLIGHT, TOKEN_COLORS, TOKEN_INDEX, TREAT_DISEASE, createLine, currentTurn, infectionRate2numCards, initLogic, log, numPlayers, playTurn, player2SpecialAction, playerBasicActions, playerRoles, playerSpecialActions;
 
   window.Game = this;
   App = {
@@ -24,13 +24,6 @@ $(function() {
   };
   currentTurn = -1;
   numPlayers = 7;
-  numOutbreaks = 0;
-  infectionRate = 0;
-  playerLocations = [4, 59, 3, 4];
-  locationId2Cube = {
-    1: 0,
-    2: 3
-  };
   playerRoles = {
     Medic: {
       description: "Removes all cubes of a single color when you treat a city,\nAdminister known cures for free"
@@ -66,15 +59,6 @@ $(function() {
   MEDIC = 3;
   SCIENTIST = 4;
   DISPATCHER = 5;
-  curedDiseases = [];
-  infection = {
-    location: 1,
-    disease: RED
-  };
-  researchCenter = {
-    location: 1,
-    disease: BLUE
-  };
   playerBasicActions = [DRIVE, DIRECT_FLIGHT, CHARTER_FLIGHT, SHUTTLE_FLIGHT, PASS];
   playerSpecialActions = [DISPATCH, BUILD_RESEARCH_CENTER, DISCOVER_CURE, TREAT_DISEASE, SHARE_KNOWLEDGE];
   playerBasicActions = player2SpecialAction = {
@@ -1103,7 +1087,7 @@ $(function() {
   });
   App.View.InfectionRate = Backbone.View.extend({
     el: '#infection_rate',
-    __template: "<h4 style=\"opacity: 0.5\">Infection Rate</h4>\n<h2>{{num}}</h2>",
+    __template: "<h4 style=\"opacity: 0.5; margin-top: 5px;\">Infection Rate</h4>\n<h2>{{num}}</h2>",
     template: function(c) {
       return Mustache.render(this.__template, c);
     },
@@ -1129,7 +1113,7 @@ $(function() {
   });
   App.View.Infections = Backbone.View.extend({
     el: '#outbreaks',
-    __template: "<h4 style=\"opacity: 0.5\">Outbreaks</h4>\n<h2>{{num}} out of 8</h2>",
+    __template: "<h4 style=\"opacity: 0.5; margin-top: 5px;\">Outbreaks</h4>\n<h2>{{num}} out of 8</h2>",
     template: function(c) {
       return Mustache.render(this.__template, c);
     },
@@ -1210,9 +1194,10 @@ $(function() {
     citySelected: function(id) {
       alert("Selected city " + id);
       if (App.ActionListener.actionTaken = true) {
-        return App.takeAction(id, {
+        App.takeAction(id, {
           destination: id
         });
+        return App.World.makeNodesUnselectable();
       } else {
         return App.World.makeNodesUnselectable();
       }
@@ -1415,6 +1400,9 @@ $(function() {
     return console.log("DONE WITH INIT");
   };
   return playTurn = function(data) {
+    alert('here in playTurn');
+    console.log("@@@");
+    console.log(data);
     return App.User.set('actions', 4);
   };
 });

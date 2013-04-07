@@ -127,16 +127,20 @@ function getBootstrapObject(sessionId) {
   };
 }
 
-function onEndTurn(data) {
+function onEndTurn(data, socketId) {
   console.log('==========================');
   console.log('endTurn got data => ', data);
   console.log('==========================');
+
+  return "ON END TURN"
 }
 
-function onMessage(data) {
+function onMessage(data, socketId) {
   console.log('==========================');
   console.log('onMessage got data => ', data);
   console.log('==========================');
+
+  return 'FOOBAR';
 }
 
 module.exports = function(app) {
@@ -148,8 +152,12 @@ module.exports = function(app) {
   io.sockets.on('connection', function(socket) {
     socket.emit('bootstrap', getBootstrapObject(socket.id));
 
-    socket.on('message', onMessage);
-    socket.on('endTurn', onEndTurn);
+    socket.on('message', function(data) {
+      socket.emit('endTurn', onMessage(data, socket.id));
+    });
+    socket.on('endTurn', function(data) {
+      socket.emit('message', onEndTurn(data, socket.id));
+    });
   });
 
 };
