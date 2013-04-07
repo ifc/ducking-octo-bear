@@ -493,7 +493,7 @@ $ ->
       curLocation = @get('location')
 
       if not curLocation.hasResearchCenter()
-        if @get('role') == 'researcher'
+        if @get('role') == 'ops expert'
           curLocation.buildResearchCenter()
         else
           builtRc = false
@@ -570,6 +570,60 @@ $ ->
       return ret
 
 
+    shareKnowledge: (targetUser, targetCard) ->
+      ret = 0
+      curLocation = @get('location')
+
+      # Make sure I have the card.
+      haveTheCard = false
+      myCards = @get('cards')
+      for card in myCards
+        if targetCard == card
+          haveTheCard = true
+
+      if not haveTheCard
+        alert("You do not have that card")
+        return -1
+
+      # Make sure the other user has room.
+      if targetUser.get('cards').length >= 7
+        alert("Target user has too many cards already")
+        return -1
+
+      # Transfer the card.
+      canTransfer = (targetCard.get('name') == curLocation.get('name')) or @get('role') == 'researcher'
+      if canTransfer
+        myCards.remove(targetCard)
+        targetUser.get('cards').push(targetCard)
+      else
+        alert("Cant transfer unless you are on the location")
+        ret = -1
+
+      return ret
+
+    dispatch: (targetUser, destination) ->
+      ret = -1
+      if @get('role') != 'dispatcher'
+        alert("Can only dispatch if you are a dispatcher")
+        return -1
+
+      # TODO Try these first:
+      #drive: (destination) ->
+      #directFlight: (destination) ->
+      #charterFlight: (destination) ->
+      #shuttleFlight
+
+      # Finally see if the location is where someone else is.
+      for player in App.players
+        if player.get('location') == destination
+          targetUser.set('location', destination)
+          ret = 0
+          break
+
+      return ret
+
+
+
     # Will return 0 if action was performed. If not zero, couldn't take action. @@@
     # - TODO: bake in player roles.
     takeAction: (actionId, options) ->
@@ -586,7 +640,7 @@ $ ->
       else if actionId == PASS
         ret = 0
       else if actionId == DISPATCH
-        # TODO
+        ret = @dispatch(options['targetUser'], options['destination'])
       else if actionId == BUILD_RESEARCH_CENTER
         ret = @buildResearchCenter()
       else if actionId == DISCOVER_CURE
@@ -594,7 +648,7 @@ $ ->
       else if actionId == TREAT_DISEASE
         ret = @treatDisease()
       else if actionId == SHARE_KNOWLEDGE
-        # TODO
+        ret = @shareKnowledge(options['targetUser'], options['targetCard'])
       else
         ret = -1
 
@@ -814,18 +868,26 @@ $ ->
 
     # Define the user.
     userId = data['clientId']
+    appPlayers = []
     for playerDict in data['players']
-      if playerDict['clientId'] == userId
-        App.user = new App.Model.User(playerDict)
-        break
+      player = new App.Model.User(playerDict)
 
-    playerCards = []
-    for cardName in App.user.get('cards')
-      playerCards.push new App.Model.Card
-        'name': cardName
-        'type': 'city card'
-    App.user.set('cards', new App.Collection.Card(playerCards))
-    App.user.set('location', App.World.Cities[App.user.get('location')])
+      # Assign the cards
+      playerCards = []
+      for cardName in player.get('cards')
+        playerCards.push new App.Model.Card
+          'name': cardName
+          'type': 'city card'
+      player.set('cards', new App.Collection.Card(playerCards))
+
+      # Set the location
+      player.set('location', App.World.Cities[player.get('location')])
+
+      appPlayers.push(player)
+
+      if playerDict['clientId'] == userId
+        App.user = player
+    App.players = appPlayers
 
     # Create infection card deck.
     infectionDeck = []

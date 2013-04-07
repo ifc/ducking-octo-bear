@@ -556,7 +556,7 @@ $(function() {
       ret = 0;
       curLocation = this.get('location');
       if (!curLocation.hasResearchCenter()) {
-        if (this.get('role') === 'researcher') {
+        if (this.get('role') === 'ops expert') {
           curLocation.buildResearchCenter();
         } else {
           builtRc = false;
@@ -633,6 +633,56 @@ $(function() {
       }
       return ret;
     },
+    shareKnowledge: function(targetUser, targetCard) {
+      var canTransfer, card, curLocation, haveTheCard, myCards, ret, _i, _len;
+
+      ret = 0;
+      curLocation = this.get('location');
+      haveTheCard = false;
+      myCards = this.get('cards');
+      for (_i = 0, _len = myCards.length; _i < _len; _i++) {
+        card = myCards[_i];
+        if (targetCard === card) {
+          haveTheCard = true;
+        }
+      }
+      if (!haveTheCard) {
+        alert("You do not have that card");
+        return -1;
+      }
+      if (targetUser.get('cards').length >= 7) {
+        alert("Target user has too many cards already");
+        return -1;
+      }
+      canTransfer = (targetCard.get('name') === curLocation.get('name')) || this.get('role') === 'researcher';
+      if (canTransfer) {
+        myCards.remove(targetCard);
+        targetUser.get('cards').push(targetCard);
+      } else {
+        alert("Cant transfer unless you are on the location");
+        ret = -1;
+      }
+      return ret;
+    },
+    dispatch: function(targetUser, destination) {
+      var player, ret, _i, _len, _ref;
+
+      ret = -1;
+      if (this.get('role') !== 'dispatcher') {
+        alert("Can only dispatch if you are a dispatcher");
+        return -1;
+      }
+      _ref = App.players;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        player = _ref[_i];
+        if (player.get('location') === destination) {
+          targetUser.set('location', destination);
+          ret = 0;
+          break;
+        }
+      }
+      return ret;
+    },
     takeAction: function(actionId, options) {
       var ret;
 
@@ -648,7 +698,7 @@ $(function() {
       } else if (actionId === PASS) {
         ret = 0;
       } else if (actionId === DISPATCH) {
-
+        ret = this.dispatch(options['targetUser'], options['destination']);
       } else if (actionId === BUILD_RESEARCH_CENTER) {
         ret = this.buildResearchCenter();
       } else if (actionId === DISCOVER_CURE) {
@@ -656,7 +706,7 @@ $(function() {
       } else if (actionId === TREAT_DISEASE) {
         ret = this.treatDisease();
       } else if (actionId === SHARE_KNOWLEDGE) {
-
+        ret = this.shareKnowledge(options['targetUser'], options['targetCard']);
       } else {
         ret = -1;
       }
@@ -843,31 +893,34 @@ $(function() {
     });
   });
   initLogic = function(data) {
-    var cardName, cityName, infectionDeck, name, newCard, numInfections, playerCards, playerDeck, playerDict, userId, _i, _j, _k, _l, _len, _len1, _len2, _len3, _ref, _ref1, _ref2, _ref3, _ref4;
+    var appPlayers, cardName, cityName, infectionDeck, name, newCard, numInfections, player, playerCards, playerDeck, playerDict, userId, _i, _j, _k, _l, _len, _len1, _len2, _len3, _ref, _ref1, _ref2, _ref3, _ref4;
 
     console.log("HERE WE ARE IN INIT LOGIC");
     console.log(data);
     App = window.App;
     userId = data['clientId'];
+    appPlayers = [];
     _ref = data['players'];
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
       playerDict = _ref[_i];
+      player = new App.Model.User(playerDict);
+      playerCards = [];
+      _ref1 = player.get('cards');
+      for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+        cardName = _ref1[_j];
+        playerCards.push(new App.Model.Card({
+          'name': cardName,
+          'type': 'city card'
+        }));
+      }
+      player.set('cards', new App.Collection.Card(playerCards));
+      player.set('location', App.World.Cities[player.get('location')]);
+      appPlayers.push(player);
       if (playerDict['clientId'] === userId) {
-        App.user = new App.Model.User(playerDict);
-        break;
+        App.user = player;
       }
     }
-    playerCards = [];
-    _ref1 = App.user.get('cards');
-    for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
-      cardName = _ref1[_j];
-      playerCards.push(new App.Model.Card({
-        'name': cardName,
-        'type': 'city card'
-      }));
-    }
-    App.user.set('cards', new App.Collection.Card(playerCards));
-    App.user.set('location', App.World.Cities[App.user.get('location')]);
+    App.players = appPlayers;
     infectionDeck = [];
     _ref2 = data['infectionDeck'];
     for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
