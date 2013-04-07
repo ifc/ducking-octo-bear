@@ -206,6 +206,8 @@ a {
   z-index: 98;
   position: absolute;
   background-color: transparent;
+  max-width: 55px;
+
   &.selectable {
     .sphere {
       border: 1px solid red;
@@ -213,18 +215,26 @@ a {
     }
   }
   .num-infected {
-    padding: 0;
-    margin: 0;
+    padding: 0 0 0 0;
+    margin: 5px 0 0 -4px;
     list-style: none;
     width: 34px;
     height: 10px;
+    float: left;
   }
+
+  .city-name {
+    line-height: 9px;
+    font-size: 9px;
+    color: #777;
+    background: rgba(250, 250, 250, 0.7);
+    padding: 1px;
+  }
+
   .infected-cube {
-    display: inline-block;
     width: 6px;
     height: 6px;
-    margin-left: 2px;
-    margin-right: 2px;
+    margin-bottom: 3px;
     &.RED { background: rgb(219,54,20); }
     &.BLUE { background: rgb(28,96,124); }
     &.YELLOW { background: rgb(236,217,14); }
@@ -233,7 +243,10 @@ a {
   .research-center {
     width: 10px;
     height: 10px;
-    &.active { background: #D2B48C;}
+    margin-right: 2px;
+    float: left;
+    display: none;
+    &.active { background: #D2B48C; display: inline !important;}
   }
 }
 
