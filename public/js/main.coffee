@@ -255,12 +255,16 @@ $ ->
 
     # Link to cities for each
     initGraph: ->
-      @_internal = {}
-      _.each @Regions, (Region) ->
-        _.each Region, (City, name) ->
-          @_internal[name] = City
+      console.log 'here'
+      @CityViews = []
+      @Cities = {}
+      _.each @Regions, (Region) =>
+        _.each Region, (City, name) =>
+          @Cities[name] = City
           City.initConnections()
-
+          view = new CityView {model: City}
+          $('body').append(view.render().el)
+          @CityViews.append(view)
 
   Card = Backbone.Model.extend
 
@@ -317,6 +321,9 @@ $ ->
     context: ->
       color: ''
 
+  CityCollection = Backbone.Collection.extend
+    model: City
+
   RightPanel = Backbone.View.extend
     el: '#right-panel'
     __template: """
@@ -327,3 +334,84 @@ $ ->
       @model.toJSON()
     render: ->
       @$el.html @template _.result this, 'context'
+  #
+  # Async bootstrap. App is only global object
+  #
+  # App.Socket
+  # App.World
+  App =
+
+    ###############################
+
+    init: (cb) ->
+
+      # Geo locate
+      if navigator.geolocation
+
+        # navigator.geolocation.getCurrentPosition(cb, this.error);
+        navigator.geolocation.watchPosition cb, @error
+      else
+        error "not supported"
+
+      $('#right-panel-toggle').click (e) ->
+        $(e.currentTarget).toggleClass('red')
+        $('#right-panel').toggle()
+
+      # World creates a basic graph from
+      # cities and updates.
+      App.World = new World
+        Regions: REGIONS
+
+    ###############################
+
+    error: (msg) ->
+      log msg
+
+    ###############################
+
+    bootstrap: (data) ->
+      log data
+      console.log 'here'
+
+      return if App.started
+
+      # UI Shit
+      right_panel = new RightPanel
+        model: World
+
+      initLogic(data)
+
+    playTurn: (data) ->
+      playTurn(data)
+
+  ###############
+  # Initialize
+  ###############
+
+  App.init (position) ->
+
+    # Start logic
+
+    # not sure why we're hitting this twice in FF,
+    # I think it's to do with a cached result coming back
+    return if App.succeeded
+    App.succeeded = true
+    # x = position.coords.latitude
+    # y = position.coords.longitude
+    socket = io.connect("http://localhost:3000")
+    App.Socket = socket
+
+    socket.on "boostrap", (data) ->
+      App.bootstrap(data)
+      App.started = true
+
+    socket.on "message", (data) ->
+      App.playTurn(data)
+
+  initLogic = (data) ->
+
+  playTurn = (data) ->
+
+
+
+

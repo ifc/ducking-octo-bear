@@ -1,5 +1,5 @@
 $(function() {
-  var App, BLUE, BUILD_RESEARCH_CENTER, CHARTER_FLIGHT, Card, CardView, City, CityView, DIRECT_FLIGHT, DISCOVER_CURE, DISPATCH, DRIVE, PASS, RED, REGIONS, RightPanel, SHARE_KNOWLEDGE, SHUTTLE_FLIGHT, TREAT_DISEASE, World, createLine, curedDiseases, currentTurn, infection, infectionRate, infectionRate2numCards, locationId2Cube, log, numOutbreaks, numPlayers, player2SpecialAction, playerBasicActions, playerLocations, playerRoles, playerSpecialActions, researchCenter;
+  var BLUE, BUILD_RESEARCH_CENTER, CHARTER_FLIGHT, Card, CardView, City, CityCollection, CityView, DIRECT_FLIGHT, DISCOVER_CURE, DISPATCH, DRIVE, PASS, RED, REGIONS, RightPanel, SHARE_KNOWLEDGE, SHUTTLE_FLIGHT, TREAT_DISEASE, World, createLine, curedDiseases, currentTurn, infection, infectionRate, infectionRate2numCards, locationId2Cube, log, numOutbreaks, numPlayers, player2SpecialAction, playerBasicActions, playerLocations, playerRoles, playerSpecialActions, researchCenter;
 
   window.Game = this;
   log = console.log;
@@ -240,11 +240,22 @@ $(function() {
       return initGraph();
     },
     initGraph: function() {
-      this._internal = {};
+      var _this = this;
+
+      console.log('here');
+      this.CityViews = [];
+      this.Cities = {};
       return _.each(this.Regions, function(Region) {
         return _.each(Region, function(City, name) {
-          this._internal[name] = City;
-          return City.initConnections();
+          var view;
+
+          _this.Cities[name] = City;
+          City.initConnections();
+          view = new CityView({
+            model: City
+          });
+          $('body').append(view.render().el);
+          return _this.CityViews.append(view);
         });
       });
     }
@@ -303,9 +314,12 @@ $(function() {
       };
     }
   });
+  CityCollection = Backbone.Collection.extend({
+    model: City
+  });
   RightPanel = Backbone.View.extend({
     el: '#right-panel',
-    __template: "",
+    __template: "<h1>",
     template: function(c) {
       return Mustache.render(this.__template, c);
     },
@@ -316,16 +330,5 @@ $(function() {
       return this.$el.html(this.template(_.result(this, 'context')));
     }
   });
-  return App = {
-    init: function(cb) {
-      if (navigator.geolocation) {
-        return navigator.geolocation.watchPosition(cb, this.error);
-      } else {
-        return error("not supported");
-      }
-    },
-    error: function(msg) {
-      return log(msg);
-    }
-  };
+  return Backbone.trigger('fully-defined');
 });
