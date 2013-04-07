@@ -108,8 +108,8 @@ $(function() {
       Miami: {
         connections: ["Mexico City", "Atlanta", "Washington", "Bogota"],
         css: {
-          top: 30,
-          left: 40
+          top: 125,
+          left: 400
         }
       },
       Bogota: {
@@ -593,23 +593,7 @@ $(function() {
     playTurn: function(data) {
       return playTurn(data);
     },
-    takeAction: function(actionId, options) {
-      var dest;
-
-      if (actionId === DRIVE) {
-        dest = options['destination'];
-      }
-      DRIVE = 1;
-      DIRECT_FLIGHT = 2;
-      CHARTER_FLIGHT = 3;
-      SHUTTLE_FLIGHT = 4;
-      PASS = 5;
-      DISPATCH = 6;
-      BUILD_RESEARCH_CENTER = 7;
-      DISCOVER_CURE = 8;
-      TREAT_DISEASE = 9;
-      return SHARE_KNOWLEDGE = 10;
-    }
+    takeAction: function(action_int) {}
   });
   App.init(function(position) {
     var socket;

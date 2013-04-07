@@ -46,7 +46,7 @@ a {
   z-index: 10;
   .panel();
   padding: 0;
-  width: 1024px;
+  width: 1200px;
   height: 768px;
   background: url("http://clipartist.info/www/COLOURINGBOOK.ORG/Letters/W/world_map_1_coloring_book_colouring-2555px.png");
   background-size: contain;
@@ -55,7 +55,7 @@ a {
 
 #outbreaks {
   display: inline-block;
-  width: (1024 / 3) * 1px;
+  width: (1200 / 3) * 1px;
   height: 100px;
   bottom: 0;
   .panel();
@@ -64,10 +64,10 @@ a {
 
 #cures {
   display: inline-block;
-  width: (1024 / 3) * 1px;
+  width: (1200 / 3) * 1px;
   height: 100px;
   bottom: 0;
-  left: (1024/3) * 1px;
+  left: (1200/3) * 1px;
   .panel();
   position: fixed;
 }
@@ -85,11 +85,18 @@ a {
   position: fixed;
   top: 0;
   bottom: 0;
-  left: 2 * (1024 / 3) * 1px;
-  width: (1024 / 3) * 1px;
+  left: 2 * (1200 / 3) * 1px;
+  width: (1200 / 3) * 1px;
 }
 .cityview {
   position: absolute;
+  background-color: transparent;
+  &.selectable {
+    .sphere {
+      border: 1px solid red;
+      background-color: white;
+    }
+  }
 }
 
 .card {

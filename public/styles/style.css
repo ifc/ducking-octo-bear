@@ -53,7 +53,7 @@ a {
   padding: 10px;
   margin: 0;
   padding: 0;
-  width: 1024px;
+  width: 1200px;
   height: 768px;
   background: url("http://clipartist.info/www/COLOURINGBOOK.ORG/Letters/W/world_map_1_coloring_book_colouring-2555px.png");
   background-size: contain;
@@ -61,7 +61,7 @@ a {
 }
 #outbreaks {
   display: inline-block;
-  width: 341.3333333333333px;
+  width: 400px;
   height: 100px;
   bottom: 0;
   box-sizing: border-box;
@@ -73,10 +73,10 @@ a {
 }
 #cures {
   display: inline-block;
-  width: 341.3333333333333px;
+  width: 400px;
   height: 100px;
   bottom: 0;
-  left: 341.3333333333333px;
+  left: 400px;
   box-sizing: border-box;
   background: white;
   border: 1px solid #efefef;
@@ -101,11 +101,16 @@ a {
   position: fixed;
   top: 0;
   bottom: 0;
-  left: 682.6666666666666px;
-  width: 341.3333333333333px;
+  left: 800px;
+  width: 400px;
 }
 .cityview {
   position: absolute;
+  background-color: transparent;
+}
+.cityview.selectable .sphere {
+  border: 1px solid red;
+  background-color: white;
 }
 .card {
   height: 24px;

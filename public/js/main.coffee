@@ -123,8 +123,8 @@ $ ->
       Miami:
         connections: ["Mexico City", "Atlanta", "Washington", "Bogota"]
         css:
-          top: 30
-          left: 40
+          top: 125
+          left: 400
 
       Bogota:
         connections: ["Mexico City", "Miami", "Sao Paulo", "Buenos Aires", "Lima"]
@@ -418,6 +418,12 @@ $ ->
         $('#stage').append(view.render().el)
         view.setPosition()
         @CityViews.push(view)
+    makeNodesSelectable: ->
+      _.each @CityViews, (view) ->
+        view.makeSelectable()
+    makeUnselectable: ->
+      _.each @CityViews, (view) ->
+        view.makeUnselectable()
 
   App.Model.User = Backbone.Model.extend()
 
@@ -486,6 +492,12 @@ $ ->
       @$el.css @model.get('css')
     context: ->
       @model.toJSON()
+    makeSelectable: ->
+      @selectable = true
+      @$el.addClass('selectable')
+    makeUnselectable: ->
+      @selectable = false
+      @$el.removeClass('selectable')
 
   App.Collection.City = Backbone.Collection.extend
     model: App.Model.City
@@ -514,9 +526,20 @@ $ ->
     context: -> @model.toJSON()
     render: ->
       @$el.html @template _.result this, 'context'
-    takeAction: ->
+    takeAction: (e) ->
+      id = parseInt $(e.currentTarget).data('action'), 10
+      Backbone.trigger 'rightPanel:actionTaken', id
 
-      App.takeAction
+  App.View.ActionListener = Backbone.View.extend
+    initialize: ->
+      _.bindAll(this)
+      Backbone.on 'rightPanel:actionTaken', @rightPanelAction
+
+    rightPanelAction: (id) ->
+      if DRIVE <= id <= SHUTTLE_FLIGHT
+        App.World.makeNodesSelectable()
+      # if
+
   #
   # Async bootstrap. App is only global object
   #
@@ -547,6 +570,7 @@ $ ->
       App.World.initGraph()
       App.RightPanel = new App.View.RightPanel {model: App.World}
       App.RightPanel.render()
+      App.ActionListener = new App.View.ActionListener()
 
     ###############################
 
