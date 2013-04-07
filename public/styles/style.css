@@ -27,6 +27,10 @@ a {
 }
 .sphere {
   display: block;
+  background-repeat: no-repeat;
+  background-size: contain;
+  width: 24px;
+  height: 24px;
 }
 .sphere.red {
   background-url: "/img/sphere/red.png";

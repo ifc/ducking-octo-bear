@@ -2,6 +2,13 @@ $ ->
 
   # Keep reference to Context
   window.Game = this
+  App =
+    Model: {}
+    View: {}
+    Collection: {}
+    World: null
+    Socket: null
+  window.App = App
 
   #
   # Definitions
@@ -249,26 +256,29 @@ $ ->
       Milan:
         connections: ["Paris", "Essen", "Istanbul"]
 
-  World = Backbone.Model.extend
+  App.Model.World = Backbone.Model.extend
     initialize: (options) ->
-      initGraph()
-
+      @Regions = options.Regions
+      @Cities = {}
+      _.each @Regions, (Region, Color) =>
+        _.each Region, (obj, name) =>
+          City = new App.Model.City(obj)
+          City.set 'color', (Color).toLowerCase()
+          City.set 'name', name
+          @Cities[name] = City
+      console.log @Cities
     # Link to cities for each
     initGraph: ->
-      console.log 'here'
       @CityViews = []
-      @Cities = {}
-      _.each @Regions, (Region) =>
-        _.each Region, (City, name) =>
-          @Cities[name] = City
-          City.initConnections()
-          view = new CityView {model: City}
-          $('body').append(view.render().el)
-          @CityViews.append(view)
+      _.each @Cities, (City) =>
+        City.initConnections()
+        view = new App.View.City {model: City}
+        $('#stage').append(view.render().el)
+        @CityViews.push(view)
 
-  Card = Backbone.Model.extend
+  App.Model.Card = Backbone.Model.extend
 
-  CardView = Backbone.Model.extend
+  App.View.Card = Backbone.Model.extend
     tagName: "div"
     className: "card"
     __template: """
@@ -292,13 +302,19 @@ $ ->
       name: ''
       color: ''
 
-  City = Backbone.Model.extend
-    initialize: ->
+  App.Model.City = Backbone.Model.extend
+    initialize: (opt) ->
+      @connections = opt.connections
       @set "researchCenter", 0
       @set "diseaseCubes", 0
 
     initConnections: ->
-      _.each @get("connections"), ->
+      connections = _.map @get("connections"), (name) ->
+        if App.World.Cities[name] is undefined
+          console.log name
+        App.World.Cities[name]
+      @set "connections", connections
+      delete this['connections']
 
     infect: ->
       @addDiseaseCubes 1
@@ -309,7 +325,7 @@ $ ->
     addDiseaseCubes: (num) ->
       @set "diseaseCubes", @get("diseaseCubes") + num
 
-  CityView = Backbone.View.extend
+  App.View.City = Backbone.View.extend
     tagName: "div"
     className: "cityview"
     __template: """
@@ -318,13 +334,15 @@ $ ->
     template: (c) -> Mustache.render @__template, c
     render: ->
       @$el.html @template _.result this, 'context'
+      console.log @$el
+      return this
     context: ->
-      color: ''
+      @model.toJSON()
 
-  CityCollection = Backbone.Collection.extend
-    model: City
+  App.Collection.City = Backbone.Collection.extend
+    model: App.Model.City
 
-  RightPanel = Backbone.View.extend
+  App.View.RightPanel = Backbone.View.extend
     el: '#right-panel'
     __template: """
       <h1>
@@ -339,7 +357,7 @@ $ ->
   #
   # App.Socket
   # App.World
-  App =
+  _.extend App,
 
     ###############################
 
@@ -359,8 +377,9 @@ $ ->
 
       # World creates a basic graph from
       # cities and updates.
-      App.World = new World
+      App.World = new App.Model.World
         Regions: REGIONS
+      App.World.initGraph()
 
     ###############################
 
@@ -377,7 +396,7 @@ $ ->
 
       # UI Shit
       right_panel = new RightPanel
-        model: World
+        model: App.World
 
       initLogic(data)
 

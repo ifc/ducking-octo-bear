@@ -1,7 +1,15 @@
 $(function() {
-  var BLUE, BUILD_RESEARCH_CENTER, CHARTER_FLIGHT, Card, CardView, City, CityCollection, CityView, DIRECT_FLIGHT, DISCOVER_CURE, DISPATCH, DRIVE, PASS, RED, REGIONS, RightPanel, SHARE_KNOWLEDGE, SHUTTLE_FLIGHT, TREAT_DISEASE, World, createLine, curedDiseases, currentTurn, infection, infectionRate, infectionRate2numCards, locationId2Cube, log, numOutbreaks, numPlayers, player2SpecialAction, playerBasicActions, playerLocations, playerRoles, playerSpecialActions, researchCenter;
+  var App, BLUE, BUILD_RESEARCH_CENTER, CHARTER_FLIGHT, DIRECT_FLIGHT, DISCOVER_CURE, DISPATCH, DRIVE, PASS, RED, REGIONS, SHARE_KNOWLEDGE, SHUTTLE_FLIGHT, TREAT_DISEASE, createLine, curedDiseases, currentTurn, infection, infectionRate, infectionRate2numCards, initLogic, locationId2Cube, log, numOutbreaks, numPlayers, playTurn, player2SpecialAction, playerBasicActions, playerLocations, playerRoles, playerSpecialActions, researchCenter;
 
   window.Game = this;
+  App = {
+    Model: {},
+    View: {},
+    Collection: {},
+    World: null,
+    Socket: null
+  };
+  window.App = App;
   log = console.log;
   infectionRate2numCards = {
     0: 2,
@@ -235,33 +243,42 @@ $(function() {
       }
     }
   };
-  World = Backbone.Model.extend({
+  App.Model.World = Backbone.Model.extend({
     initialize: function(options) {
-      return initGraph();
+      var _this = this;
+
+      this.Regions = options.Regions;
+      this.Cities = {};
+      _.each(this.Regions, function(Region, Color) {
+        return _.each(Region, function(obj, name) {
+          var City;
+
+          City = new App.Model.City(obj);
+          City.set('color', Color.toLowerCase());
+          City.set('name', name);
+          return _this.Cities[name] = City;
+        });
+      });
+      return console.log(this.Cities);
     },
     initGraph: function() {
       var _this = this;
 
-      console.log('here');
       this.CityViews = [];
-      this.Cities = {};
-      return _.each(this.Regions, function(Region) {
-        return _.each(Region, function(City, name) {
-          var view;
+      return _.each(this.Cities, function(City) {
+        var view;
 
-          _this.Cities[name] = City;
-          City.initConnections();
-          view = new CityView({
-            model: City
-          });
-          $('body').append(view.render().el);
-          return _this.CityViews.append(view);
+        City.initConnections();
+        view = new App.View.City({
+          model: City
         });
+        $('#stage').append(view.render().el);
+        return _this.CityViews.push(view);
       });
     }
   });
-  Card = Backbone.Model.extend;
-  CardView = Backbone.Model.extend({
+  App.Model.Card = Backbone.Model.extend;
+  App.View.Card = Backbone.Model.extend({
     tagName: "div",
     className: "card",
     __template: "<div class=\"title\">\n  <div class=\"sphere {{color}} pull-left\"></div>\n</div>\n<div class=\"name\">\n  {{name}}\n</div>\n<div class=\"map\">\n  &nbsp;\n</div>\n<div class=\"footer\">\n  <div class=\"sphere {{color}} pull-right\"></div>\n</div>",
@@ -278,13 +295,23 @@ $(function() {
       };
     }
   });
-  City = Backbone.Model.extend({
-    initialize: function() {
+  App.Model.City = Backbone.Model.extend({
+    initialize: function(opt) {
+      this.connections = opt.connections;
       this.set("researchCenter", 0);
       return this.set("diseaseCubes", 0);
     },
     initConnections: function() {
-      return _.each(this.get("connections"), function() {});
+      var connections;
+
+      connections = _.map(this.get("connections"), function(name) {
+        if (App.World.Cities[name] === void 0) {
+          console.log(name);
+        }
+        return App.World.Cities[name];
+      });
+      this.set("connections", connections);
+      return delete this['connections'];
     },
     infect: function() {
       this.addDiseaseCubes(1);
@@ -298,7 +325,7 @@ $(function() {
       return this.set("diseaseCubes", this.get("diseaseCubes") + num);
     }
   });
-  CityView = Backbone.View.extend({
+  App.View.City = Backbone.View.extend({
     tagName: "div",
     className: "cityview",
     __template: "<div class=\"sphere {{color}}\"></div>",
@@ -306,18 +333,18 @@ $(function() {
       return Mustache.render(this.__template, c);
     },
     render: function() {
-      return this.$el.html(this.template(_.result(this, 'context')));
+      this.$el.html(this.template(_.result(this, 'context')));
+      console.log(this.$el);
+      return this;
     },
     context: function() {
-      return {
-        color: ''
-      };
+      return this.model.toJSON();
     }
   });
-  CityCollection = Backbone.Collection.extend({
-    model: City
+  App.Collection.City = Backbone.Collection.extend({
+    model: App.Model.City
   });
-  RightPanel = Backbone.View.extend({
+  App.View.RightPanel = Backbone.View.extend({
     el: '#right-panel',
     __template: "<h1>",
     template: function(c) {
@@ -330,5 +357,59 @@ $(function() {
       return this.$el.html(this.template(_.result(this, 'context')));
     }
   });
-  return Backbone.trigger('fully-defined');
+  _.extend(App, {
+    init: function(cb) {
+      if (navigator.geolocation) {
+        navigator.geolocation.watchPosition(cb, this.error);
+      } else {
+        error("not supported");
+      }
+      $('#right-panel-toggle').click(function(e) {
+        $(e.currentTarget).toggleClass('red');
+        return $('#right-panel').toggle();
+      });
+      App.World = new App.Model.World({
+        Regions: REGIONS
+      });
+      return App.World.initGraph();
+    },
+    error: function(msg) {
+      return log(msg);
+    },
+    bootstrap: function(data) {
+      var right_panel;
+
+      log(data);
+      console.log('here');
+      if (App.started) {
+        return;
+      }
+      right_panel = new RightPanel({
+        model: App.World
+      });
+      return initLogic(data);
+    },
+    playTurn: function(data) {
+      return playTurn(data);
+    }
+  });
+  App.init(function(position) {
+    var socket;
+
+    if (App.succeeded) {
+      return;
+    }
+    App.succeeded = true;
+    socket = io.connect("http://localhost:3000");
+    App.Socket = socket;
+    socket.on("boostrap", function(data) {
+      App.bootstrap(data);
+      return App.started = true;
+    });
+    return socket.on("message", function(data) {
+      return App.playTurn(data);
+    });
+  });
+  initLogic = function(data) {};
+  return playTurn = function(data) {};
 });
