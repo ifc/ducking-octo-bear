@@ -427,20 +427,48 @@ $ ->
 
   App.Model.User = Backbone.Model.extend
     # Will return 0 if action was performed. If not zero, couldn't take action. @@@
+    # - TODO: bake in player roles.
     takeAction: (actionId, options) ->
+      ret = 0
+      curLocation = @get('localhost')
 
       if actionId == DRIVE
+        destination = options['destination']
+        if destination in curLocation.get('connections')
+          @set('location', destination)
+        else
+          alert("Driving to an unconnected city?")
+          ret = -1
       else if actionId == DIRECT_FLIGHT
+        # TODO
       else if actionId == CHARTER_FLIGHT
+        # TODO
       else if actionId == SHUTTLE_FLIGHT
+        # TODO
       else if actionId == PASS
+        ret = 0
       else if actionId == DISPATCH
+        # TODO
       else if actionId == BUILD_RESEARCH_CENTER
+        if not curLocation.hasResearchCenter()
+          curLocation.buildResearchCenter()
+        else
+          alert("Building research center at place that already has one?")
+          ret = -1
       else if actionId == DISCOVER_CURE
+        # TODO
       else if actionId == TREAT_DISEASE
+        if curLocation.get('diseaseCubes') > 0
+          curLocation.treat(1)
+        else
+          alert("Treating a city with no disease?")
+          ret = -1
       else if actionId == SHARE_KNOWLEDGE
+        # TODO
       else
-        return -1
+        ret = -1
+
+      return ret
 
 
   App.Model.Card = Backbone.Model.extend()
@@ -483,6 +511,17 @@ $ ->
         App.World.Cities[name]
       @set "connections", connections
       delete this['connections']
+
+    buildResearchCenter: ->
+      @set("researchCenter", 1)
+
+    hasResearchCenter: ->
+      return (@get('researchCenter') == 1)
+
+    treat: (numCubes) ->
+      @addDiseaseCubes(-1 * numCubes)
+      if @get("diseaseCubes") < 0
+        @set("diseaseCubes", 0)
 
     infect: (numCubes) ->
       @addDiseaseCubes(numCubes)
@@ -655,8 +694,8 @@ $ ->
       playerCards.push new App.Model.Card
         'name': cardName
         'type': 'city card'
-
     App.user.set('cards', new App.Collection.Card(playerCards))
+    App.user.set('location', App.World.Cities[App.user.get('location')])
 
     # Create infection card deck.
     infectionDeck = []

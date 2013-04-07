@@ -1,3 +1,5 @@
+var __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
+
 $(function() {
   var App, BLUE, BUILD_RESEARCH_CENTER, CHARTER_FLIGHT, DIRECT_FLIGHT, DISCOVER_CURE, DISPATCH, DRIVE, PASS, RED, REGIONS, SHARE_KNOWLEDGE, SHUTTLE_FLIGHT, TREAT_DISEASE, createLine, curedDiseases, currentTurn, infection, infectionRate, infectionRate2numCards, initLogic, locationId2Cube, log, numOutbreaks, numPlayers, playTurn, player2SpecialAction, playerBasicActions, playerLocations, playerRoles, playerSpecialActions, researchCenter;
 
@@ -481,8 +483,18 @@ $(function() {
   });
   App.Model.User = Backbone.Model.extend({
     takeAction: function(actionId, options) {
-      if (actionId === DRIVE) {
+      var curLocation, destination, ret;
 
+      ret = 0;
+      curLocation = this.get('localhost');
+      if (actionId === DRIVE) {
+        destination = options['destination'];
+        if (__indexOf.call(curLocation.get('connections'), destination) >= 0) {
+          this.set('location', destination);
+        } else {
+          alert("Driving to an unconnected city?");
+          ret = -1;
+        }
       } else if (actionId === DIRECT_FLIGHT) {
 
       } else if (actionId === CHARTER_FLIGHT) {
@@ -490,20 +502,31 @@ $(function() {
       } else if (actionId === SHUTTLE_FLIGHT) {
 
       } else if (actionId === PASS) {
-
+        ret = 0;
       } else if (actionId === DISPATCH) {
 
       } else if (actionId === BUILD_RESEARCH_CENTER) {
-
+        if (!curLocation.hasResearchCenter()) {
+          curLocation.buildResearchCenter();
+        } else {
+          alert("Building research center at place that already has one?");
+          ret = -1;
+        }
       } else if (actionId === DISCOVER_CURE) {
 
       } else if (actionId === TREAT_DISEASE) {
-
+        if (curLocation.get('diseaseCubes') > 0) {
+          curLocation.treat(1);
+        } else {
+          alert("Treating a city with no disease?");
+          ret = -1;
+        }
       } else if (actionId === SHARE_KNOWLEDGE) {
 
       } else {
-        return -1;
+        ret = -1;
       }
+      return ret;
     }
   });
   App.Model.Card = Backbone.Model.extend();
@@ -541,6 +564,18 @@ $(function() {
       });
       this.set("connections", connections);
       return delete this['connections'];
+    },
+    buildResearchCenter: function() {
+      return this.set("researchCenter", 1);
+    },
+    hasResearchCenter: function() {
+      return this.get('researchCenter') === 1;
+    },
+    treat: function(numCubes) {
+      this.addDiseaseCubes(-1 * numCubes);
+      if (this.get("diseaseCubes") < 0) {
+        return this.set("diseaseCubes", 0);
+      }
     },
     infect: function(numCubes) {
       this.addDiseaseCubes(numCubes);
@@ -698,6 +733,7 @@ $(function() {
       }));
     }
     App.user.set('cards', new App.Collection.Card(playerCards));
+    App.user.set('location', App.World.Cities[App.user.get('location')]);
     infectionDeck = [];
     _ref2 = data['infectionDeck'];
     for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
