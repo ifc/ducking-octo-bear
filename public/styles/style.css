@@ -81,6 +81,7 @@ a {
   background-color: transparent;
   width: 24px;
   height: 24px;
+  margin-left: 5px;
 }
 .sphere.RED {
   background-image: url("/img/spheres/red.png");
