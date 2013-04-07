@@ -34,6 +34,7 @@ app.configure('development', function(){
 });
 
 app.get('/', routes.index);
+app.get('/bootstrap', routes.bootstrap);
 app.get('/users', user.list);
 
 var ioserver = http.createServer(app).listen(app.get('port'), function(){

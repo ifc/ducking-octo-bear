@@ -1,3 +1,9 @@
+/*---------------------------------------------------
+    LESS Elements 0.9
+  ---------------------------------------------------
+    A set of useful LESS mixins
+    More info at: http://lesselements.com
+  ---------------------------------------------------*/
 body {
   padding: 0;
   margin: 0;
@@ -6,215 +12,232 @@ body {
 a {
   color: #00B7FF;
 }
+.city {
+  position: absolute;
+  display: block;
+}
+.line {
+  transform-origin: 0 100%;
+  height: 3px;
+  /* Line width of 3 */
+
+  background: #000;
+  /* Black fill */
+
+}
+.sphere {
+  display: block;
+}
+.sphere.red {
+  background-url: "/img/sphere/red.png";
+}
+.sphere.black {
+  background-url: "/img/sphere/black.png";
+}
+.sphere.blue {
+  background-url: "/img/sphere/blue.png";
+}
+.sphere.yellow {
+  background-url: "/img/sphere/yellow.png";
+}
 #stage {
-  padding: 0;
+  position: absolute;
+  background: white;
+  border: 1px solid #efefef;
+  padding: 10px;
   margin: 0;
+  padding: 0;
   width: 1024px;
   height: 768px;
   background: url("http://clipartist.info/www/COLOURINGBOOK.ORG/Letters/W/world_map_1_coloring_book_colouring-2555px.png");
   background-size: contain;
   background-repeat: no-repeat;
 }
-/*
- * Skeleton
- */
-/*
-* Skeleton V1.1
-* Copyright 2011, Dave Gamache
-* www.getskeleton.com
-* Free to use under the MIT license.
-* http://www.opensource.org/licenses/mit-license.php
-* 8/17/2011
-*/
-/* Table of Contents
-==================================================
-#Base 960 Grid
-#Clearing */
-/* #Base 960 Grid
-================================================== */
-.container {
-  position: relative;
-  width: 960px;
-  margin: 0 auto;
-  padding: 0;
+#outbreaks {
+  position: absolute;
+  background: white;
+  border: 1px solid #efefef;
+  padding: 10px;
+  margin: 0;
 }
-.container.plusfour {
-  width: 1200px;
+#cures {
+  position: absolute;
+  background: white;
+  border: 1px solid #efefef;
+  padding: 10px;
+  margin: 0;
 }
-.container.pluseight {
-  width: 1440px;
+#right-panel-toggle {
+  position: fixed;
+  width: 24px;
 }
-.column,
-.columns {
+#right-panel {
+  position: fixed;
+  width: 250px;
+}
+.card {
+  height: 24px;
+  width: 50px;
+  -webkit-border-top-right-radius: 5px;
+  -webkit-border-bottom-right-radius: 0;
+  -webkit-border-bottom-left-radius: 0;
+  -webkit-border-top-left-radius: 0;
+  -moz-border-radius-topright: 5px;
+  -moz-border-radius-bottomright: 0;
+  -moz-border-radius-bottomleft: 0;
+  -moz-border-radius-topleft: 0;
+  border-top-right-radius: 5px;
+  border-bottom-right-radius: 0;
+  border-bottom-left-radius: 0;
+  border-top-left-radius: 0;
+  -moz-background-clip: padding-box;
+  -webkit-background-clip: padding-box;
+  background-clip: padding-box;
+}
+.card .title {
+  height: 24px;
+}
+.card .name {
+  height: 24px;
+  background: yellow;
+}
+.card .footer {
+  height: 24px;
+}
+.actions {
+  border: 1px solid #dedede;
+  padding: 15px 20px 15px;
+  margin: 0;
+  width: 100%;
+}
+.pull-right {
+  float: right;
+  clear: both;
+}
+.pull-left {
   float: left;
-  display: inline;
-  margin-left: 10px !important;
-  margin-right: 10px !important;
-}
-.row {
-  margin-bottom: 20px;
-}
-/* Nested Column Classes */
-.column.alpha,
-.columns.alpha {
-  margin-left: 0!important;
-}
-.column.omega,
-.columns.omega {
-  margin-right: 0!important;
-}
-.column.alpha.omega,
-.columns.alpha.omega {
-  margin: 0!important;
-}
-.container {
-  /* Base Grid */
-
-  /* Offsets */
-
-}
-.container .one.column {
-  width: 40px;
-}
-.container .columns.two {
-  width: 100px;
-}
-.container .columns.three {
-  width: 160px;
-}
-.container .columns.four {
-  width: 220px;
-}
-.container .columns.five {
-  width: 280px;
-}
-.container .columns.six {
-  width: 340px;
-}
-.container .columns.seven {
-  width: 400px;
-}
-.container .columns.eight {
-  width: 460px;
-}
-.container .columns.nine {
-  width: 520px;
-}
-.container .columns.ten {
-  width: 580px;
-}
-.container .columns.eleven {
-  width: 640px;
-}
-.container .columns.twelve {
-  width: 700px;
-}
-.container .columns.thirteen {
-  width: 760px;
-}
-.container .columns.fourteen {
-  width: 820px;
-}
-.container .columns.fifteen {
-  width: 880px;
-}
-.container .columns.sixteen {
-  width: 940px;
-}
-.container .columns.twenty {
-  width: 1200px;
-}
-.container .columns.twentyfour {
-  width: 1420px;
-}
-.container .one-third.column {
-  width: 300px;
-}
-.container .two-thirds.column {
-  width: 620px;
-}
-.container .offset-by-one {
-  padding-left: 60px;
-}
-.container .offset-by-two {
-  padding-left: 120px;
-}
-.container .offset-by-three {
-  padding-left: 180px;
-}
-.container .offset-by-four {
-  padding-left: 240px;
-}
-.container .offset-by-five {
-  padding-left: 300px;
-}
-.container .offset-by-six {
-  padding-left: 360px;
-}
-.container .offset-by-seven {
-  padding-left: 420px;
-}
-.container .offset-by-eight {
-  padding-left: 480px;
-}
-.container .offset-by-nine {
-  padding-left: 540px;
-}
-.container .offset-by-ten {
-  padding-left: 600px;
-}
-.container .offset-by-eleven {
-  padding-left: 660px;
-}
-.container .offset-by-twelve {
-  padding-left: 720px;
-}
-.container .offset-by-thirteen {
-  padding-left: 780px;
-}
-.container .offset-by-fourteen {
-  padding-left: 840px;
-}
-.container .offset-by-fifteen {
-  padding-left: 900px;
-}
-/* #Clearing
-================================================== */
-/* Self Clearing Goodness */
-.container:after {
-  content: "\0020";
-  display: block;
-  height: 0;
-  clear: both;
-  visibility: hidden;
-}
-/* Use clearfix class on parent to clear nested columns,
-or wrap each row of columns in a <div class="row"> */
-.clearfix:before,
-.clearfix:after,
-.row:before,
-.row:after {
-  content: '\0020';
-  display: block;
-  overflow: hidden;
-  visibility: hidden;
-  width: 0;
-  height: 0;
-}
-.row:after,
-.clearfix:after {
   clear: both;
 }
-.row,
-.clearfix {
-  zoom: 1;
+/*====================================================
+CSS3 Gmail Buttons by Adam Whitcroft
+https://github.com/AdamWhitcroft/CSS3.Gmail.Buttons
+====================================================*/
+/*==================================================*/
+/*  $Basic Button                                   */
+/*==================================================*/
+.bttn {
+  text-decoration: none;
+  cursor: pointer;
+  font-size: 0.75em;
+  padding: 0 8px;
+  font-weight: bold;
+  height: 30px;
+  line-height: 30px;
+  display: inline-block;
+  outline: 0;
+  color: #444;
+  background-color: #f5f5f5;
+  background-image: -webkit-linear-gradient(top, #f5f5f5, #f1f1f1);
+  background-image: -moz-linear-gradient(top, #f5f5f5, #f1f1f1);
+  background-image: linear-gradient(top, #f5f5f5, #f1f1f1);
+  border: 1px solid #d9d9d9;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  -webkit-border-radius: 2px;
+  -moz-border-radius: 2px;
+  border-radius: 2px;
 }
-/* You can also use a <br class="clear" /> to clear columns */
-.clear {
-  clear: both;
-  display: block;
-  overflow: hidden;
-  visibility: hidden;
-  width: 0;
-  height: 0;
+.bttn:hover {
+  border: 1px solid #c6c6c6;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  -webkit-box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  -moz-box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  position: relative;
+  z-index: 1;
+}
+.bttn:active {
+  -webkit-box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+  -moz-box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+/*==================================================*/
+/*  $Emphasis                                       */
+/*==================================================*/
+.emphasis {
+  text-transform: uppercase;
+}
+/*==================================================*/
+/*  $Colors                                         */
+/*==================================================*/
+/* .red */
+.red {
+  color: #fff;
+  background-color: #d14836;
+  border: 1px solid transparent;
+  background-image: -webkit-linear-gradient(top, #dd4b39, #d14836);
+  background-image: -moz-linear-gradient(top, #dd4b39, #d14836);
+  background-image: linear-gradient(top, #dd4b39, #d14836);
+}
+.red:hover {
+  background-color: #c53727;
+  border: 1px solid #b0281a;
+  background-image: -webkit-linear-gradient(top, #dd4b39, #c53727);
+  background-image: -moz-linear-gradient(top, #dd4b39, #c53727);
+  background-image: linear-gradient(top, #dd4b39, #c53727);
+  -webkit-box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  -moz-box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+.red:active {
+  -webkit-box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
+  -moz-box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+/* .blue */
+.blue {
+  color: #fff;
+  background-color: #4D90fe;
+  border: 1px solid #3079ed;
+  background-image: -webkit-linear-gradient(top, #4d90fe, #4787ed);
+  background-image: -moz-linear-gradient(top, #4d90fe, #4787ed);
+  background-image: linear-gradient(top, #4d90fe, #4787ed);
+}
+.blue:hover {
+  background-color: #357aeb;
+  border: 1px solid #2F5bb7;
+  background-image: -webkit-linear-gradient(top, #4d90fe, #357ae8);
+  background-image: -moz-linear-gradient(top, #4d90fe, #357ae8);
+  background-image: linear-gradient(top, #4d90fe, #357ae8);
+  -webkit-box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  -moz-box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+.blue:active {
+  -webkit-box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
+  -moz-box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+/* .yellow */
+.yellow {
+  color: #867343;
+  background-color: #ffe07b;
+  border: 1px solid #fddb69;
+  background-image: -webkit-linear-gradient(top, #ffe896, #ffe07b);
+  background-image: -moz-linear-gradient(top, #ffe896, #ffe07b);
+  background-image: linear-gradient(top, #ffe896, #ffe07b);
+}
+.yellow:hover {
+  background-color: #ffda73;
+  border: 1px solid #deb74f;
+  background-image: -webkit-linear-gradient(top, #ffe485, #ffda73);
+  background-image: -moz-linear-gradient(top, #ffe485, #ffda73);
+  background-image: linear-gradient(top, #ffe485, #ffda73);
+  -webkit-box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  -moz-box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+.yellow:active {
+  -webkit-box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
+  -moz-box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
 }

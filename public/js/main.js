@@ -1,5 +1,5 @@
 $(function() {
-  var App, Card, City, CityView, REGIONS, World, curedDiseases, currentTurn, infection, infectionRate, infectionRate2numCards, locationId2Cube, log, numOutbreaks, numPlayers, player2SpecialAction, playerBasicActions, playerLocations, playerRoles, playerSpecialActions, researchCenter, world;
+  var App, BLACK, BLUE, BUILD_RESEARCH_CENTER, CHARTER_FLIGHT, Card, CardView, City, CityCollection, CityView, DIRECT_FLIGHT, DISCOVER_CURE, DISPATCH, DRIVE, PASS, RED, REGIONS, RightPanel, SHARE_KNOWLEDGE, SHUTTLE_FLIGHT, TREAT_DISEASE, World, YELLOW, createLine, curedDiseases, currentTurn, infection, infectionRate, infectionRate2numCards, locationId2Cube, log, numOutbreaks, numPlayers, player2SpecialAction, playerBasicActions, playerLocations, playerRoles, playerSpecialActions, researchCenter;
 
   window.Game = this;
   log = console.log;
@@ -21,8 +21,38 @@ $(function() {
     1: 0,
     2: 3
   };
-  playerRoles = [i, r, s, d];
-  curedDiseases = [red, blue];
+  playerRoles = {
+    Medic: {
+      description: "Removes all cubes of a single color when you treat a city,\nAdminister known cures for free"
+    },
+    Researcher: {
+      description: "You may give a player cards from your hand for 1 action per card.\nBoth of your pawns must be in the same city, but it doesn't matter which city you are in"
+    },
+    Scientist: {
+      description: "You only need 4 cards of the same color to discover a cure"
+    },
+    Dispatcher: {
+      description: "Move your fellow players' pawns on your turn as if they were your own.\nMove any pawn to another city containing a pawn for 1 action."
+    },
+    Operations: {
+      description: "You may build a Research Station in your current city for one action.\nOnce per turn at a research station you may spend an action and discard any city card to move to any city"
+    }
+  };
+  curedDiseases = [];
+  RED = 1;
+  BLUE = 2;
+  YELLOW = 3;
+  BLACK = 4;
+  DRIVE = 1;
+  DIRECT_FLIGHT = 2;
+  CHARTER_FLIGHT = 3;
+  SHUTTLE_FLIGHT = 4;
+  PASS = 5;
+  DISPATCH = 1;
+  BUILD_RESEARCH_CENTER = 2;
+  DISCOVER_CURE = 3;
+  TREAT_DISEASE = 4;
+  SHARE_KNOWLEDGE = 5;
   infection = {
     location: 1,
     disease: RED
@@ -32,11 +62,26 @@ $(function() {
     disease: BLUE
   };
   playerBasicActions = [DRIVE, DIRECT_FLIGHT, CHARTER_FLIGHT, SHUTTLE_FLIGHT, PASS];
-  playerSpecialActions = [DISPATCH, BUILD_RESEARCH_CENTER, DISCOVER_CURE, TREATMENT, SHARE_KNOWLEDGE];
+  playerSpecialActions = [DISPATCH, BUILD_RESEARCH_CENTER, DISCOVER_CURE, TREAT_DISEASE, SHARE_KNOWLEDGE];
   player2SpecialAction = {
     1: DISPATCH,
     2: BUILD_RESEARCH_CENTER,
     3: TREAT_DISEASE
+  };
+  createLine = function(x1, y1, x2, y2) {
+    var angle, length, line, transform;
+
+    length = Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
+    angle = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
+    transform = "rotate(" + angle + "deg)";
+    line = $("<div>").appendTo("body").addClass("line").css({
+      position: "absolute",
+      transform: transform
+    }).width(length).offset({
+      left: x1,
+      top: y1
+    });
+    return line;
   };
   REGIONS = {
     YELLOW: {
@@ -192,27 +237,37 @@ $(function() {
       }
     }
   };
-  world = new World({
-    Regions: REGIONS
-  });
   World = Backbone.Model.extend({
     initialize: function(options) {
       return initGraph();
     },
     initGraph: function() {
-      this._internal = {};
+      this.Cities = {};
       return _.each(this.Regions, function(Region) {
         return _.each(Region, function(City, name) {
-          this._internal[name] = City;
+          this.Cities[name] = City;
           return City.initConnections();
         });
       });
     }
   });
-  Card = Backbone.Model.extend({
+  Card = Backbone.Model.extend;
+  CardView = Backbone.Model.extend({
     tagName: "div",
     className: "card",
-    template: ""
+    __template: "<div class=\"title\">\n  <div class=\"sphere {{color}} pull-left\"></div>\n</div>\n<div class=\"name\">\n  {{name}}\n</div>\n<div class=\"map\">\n  &nbsp;\n</div>\n<div class=\"footer\">\n  <div class=\"sphere {{color}} pull-right\"></div>\n</div>",
+    template: function(c) {
+      return Mustache.render(this.__template, c);
+    },
+    render: function() {
+      return this.$el.html(this.template(_.result(this, 'context')));
+    },
+    context: function() {
+      return {
+        name: '',
+        color: ''
+      };
+    }
   });
   City = Backbone.Model.extend({
     initialize: function() {
@@ -220,7 +275,11 @@ $(function() {
       return this.set("diseaseCubes", 0);
     },
     initConnections: function() {
-      return _.each(this.get("connections"), function() {});
+      var connections;
+
+      return connections = _.map(this.get("connections"), function(name) {
+        return App.World.Cities[name];
+      });
     },
     infect: function() {
       this.addDiseaseCubes(1);
@@ -234,10 +293,46 @@ $(function() {
       return this.set("diseaseCubes", this.get("diseaseCubes") + num);
     }
   });
+  CityCollection = Backbone.Model.extend({
+    model: City
+  });
   CityView = Backbone.View.extend({
     tagName: "div",
     className: "cityview",
-    render: function() {}
+    __template: "<div class=\"sphere {{color}}\"></div>",
+    template: function(c) {
+      return Mustache.render(this.__template, c);
+    },
+    render: function() {
+      return this.$el.html(this.template(_.result(this, 'context')));
+    },
+    context: function() {
+      return {
+        color: ''
+      };
+    }
+  });
+  RightPanel = Backbone.View.extend({
+    el: '#right-panel',
+    __body_template: "<ul class=\"actions\">\n\n</ul>",
+    template: function(c) {
+      return Mustache.render(this.__body_template, c);
+    },
+    events: {
+      'click #right-panel-toggle': 'toggle'
+    },
+    toggle: function() {
+      return this.$('#right-panel-body').toggleClass('red').toggle();
+    },
+    context: function() {
+      return this.model.toJSON();
+    },
+    initialize: function() {
+      return console.log('Initializing Right Panel');
+    },
+    render: function() {
+      return this.$('#right-panel-body').html(this.template(_.result(this, 'context')));
+    }
   });
   App = {
     init: function(cb) {
@@ -249,23 +344,37 @@ $(function() {
     },
     error: function(msg) {
       return log(msg);
-    }
+    },
+    bootstrap: function(data) {
+      var right_panel;
+
+      log(data);
+      if (App.started) {
+        return;
+      }
+      App.World = new World({
+        Regions: REGIONS
+      });
+      return right_panel = new RightPanel({
+        model: World
+      });
+    },
+    playTurn: function(data) {}
   };
   return App.init(function(position) {
-    var socket, x, y;
+    var socket;
 
     if ($("#status").hasClass("success")) {
       return;
     }
-    x = position.coords.latitude;
-    y = position.coords.longitude;
     socket = io.connect("http://localhost:3000");
-    socket.on("news", function(data) {
-      console.log(data);
-      return socket.emit("my other event", {
-        my: "data"
-      });
+    App.Socket = socket;
+    socket.on("boostrap", function(data) {
+      App.bootstrap(data);
+      return App.started = true;
     });
-    return startGame();
+    return socket.on("message", function(data) {
+      return App.playTurn(data);
+    });
   });
 });
