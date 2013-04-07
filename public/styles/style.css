@@ -175,10 +175,12 @@ a {
 }
 #player-panel .players {
   list-style: none;
+  margin: 0;
+  padding: 0;
 }
 #player-panel .player {
   display: inline-block !important;
-  padding-right: 20px;
+  padding: 10px 15px 10px;
   box-sizing: border-box;
 }
 #players-toggle {

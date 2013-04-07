@@ -70,6 +70,7 @@ $ ->
   TREAT_DISEASE         = 9
   SHARE_KNOWLEDGE       = 10
   DISCARD               = 11
+  SHARE_RESEARCH_KNOWLEDGE = 12 # Researcher only
 
   # ROLES
   OPS_EXPERT = 1
@@ -414,6 +415,9 @@ $ ->
           City.set 'name', name
           @Cities[name] = City
 
+      Backbone.on 'start:action', (id) => @check id, => @makeNodesSelectable()
+      Backbone.on 'stop:action', (id) => @check id, => @makeNodesUnselectable()
+
     # Link to cities for each
     initGraph: ->
       @CityViews = []
@@ -426,27 +430,26 @@ $ ->
         # draw lines
       _.each @CityViews, (view) =>
         view.drawConnections()
+    check: (id, cb) ->
+      if DRIVE <= id <= SHUTTLE_FLIGHT or id == BUILD_RESEARCH_CENTER
+        cb?()
     makeNodesSelectable: ->
       console.log "World nodes made selectable"
-      _.each @CityViews, (view) ->
-        view.makeSelectable()
+      _.each @CityViews, (view) -> view.makeSelectable()
     makeNodesUnselectable: ->
-      _.each @CityViews, (view) ->
-        view.makeUnselectable()
-    makeCardsSelectable: ->
-      App.Hand.show()
-      App.Hand.makeSelectable()
-    makeCardsUnselectable: ->
-      App.Hand.hide()
-      App.Hand.makeUnselectable()
-    makePlayersSelectable: ->
-      App.PlayersView.show()
-      App.PlayersView.makeSelectable()
-    makePlayersUnselectable: ->
-      App.PlayersView.hide()
-      App.PlayersView.makeUnselectable()
+      console.log "World nodes made made unselectable"
+      _.each @CityViews, (view) -> view.makeUnselectable()
 
   App.Model.User = Backbone.Model.extend
+    idAttribute: 'clientId'
+    initialize: ->
+      Backbone.on 'start:action', (id) =>
+        @set 'isActing', true
+        @set 'currentAction', id
+      Backbone.on 'stop:action', =>
+        @set 'isActing', false
+        @unset 'currentAction'
+
     drive: (destination) ->
       ret = 0
       curLocation = @get('location')
@@ -723,6 +726,8 @@ $ ->
   App.View.User = Backbone.View.extend
     tagName: 'div'
     className: 'user-token'
+    events:
+      'click': 'onClick'
     initialize: ->
       _.bindAll this, 'render', 'moveToCoordinates', 'moveToCity'
       color = TOKEN_COLORS[TOKEN_INDEX++]
@@ -765,9 +770,7 @@ $ ->
       json
     # Because players may select multiple cards to trade...
     selectCard: ->
-      Backbone.trigger 'card:selected', @model.id
-    makeSelectable: ->
-    makeUnselectable: ->
+      Backbone.trigger 'select:card', @model.id
 
   App.Model.City = Backbone.Model.extend
     initialize: (opt) ->
@@ -824,6 +827,7 @@ $ ->
     template: (c) -> Mustache.render @__template, c
     initialize: ->
       _.bindAll this, 'onClick'
+      Backbone.on 'stop:action', (id) => @makeUnselectable
     events:
       'click': 'onClick'
     render: ->
@@ -847,7 +851,7 @@ $ ->
       @$el.removeClass('selectable')
     onClick: ->
       return if not @selectable
-      Backbone.trigger 'city:selected', @model.id
+      Backbone.trigger 'select:city', @model.id
     drawConnections: ->
       w = @$el.width() / 2
       h = @$el.height() / 2
@@ -895,27 +899,29 @@ $ ->
       <h4 data-id="{{id}}">Name: {{name}}</h4>
       <h4>Role: {{role}}</h4>
     """
+    events:
+      'click': 'onClick'
+    initialize: ->
+      _.bindAll this, 'render'
     template: (c) -> Mustache.render @__template, c
     render: ->
-      console.log @model.toJSON()
       @$el.html(@template @model.toJSON())
       return this
-    makeSelectable: ->
-    makeUnselectable: ->
+    onClick: ->
+      console.log this
+      Backbone.trigger 'select:player', @model.id
 
   App.View.PlayersPanel = Backbone.View.extend
     el: '#player-panel'
     __template: """
       <ul class="players"></ul>
     """
-    events:
-      'click .player': 'playerClicked'
-      'click .submit': 'submitted'
     template: (c) -> Mustache.render @__template, c
-    initialize: (options )->
-      _.bindAll this, 'playerClicked', 'submitted', 'show', 'hide'
+    initialize: (options) ->
       @players = options.players
       @subviews = []
+      Backbone.on 'start:action', (id) => App.Check.cityFirst id, => @$el.show()
+      Backbone.on 'stop:action', (id) => App.Check.cityFirst id, => @$el.hide()
     render: ->
       @$el.html @template({})
       _.each @players, (player) =>
@@ -923,22 +929,6 @@ $ ->
         @$('.players').append(view.el)
         @subviews.push(view)
       return this
-    playerClicked: (e) ->
-      id = parseInt $(e.currentTarget).data('id')
-      $(e.currentTarget).toggleClass('active')
-      @playerSelected = id
-    submitted: (e) ->
-      $('.player').removeClass('active')
-      Backbone.trigger 'player:selected', @playerSelected
-      @playerSelected = null
-    show: -> @$el.show()
-    hide: -> @$el.hide()
-    makeSelectable: ->
-      @selectable = true
-      _.each @subviews, (view) -> view.makeSelectable()
-    makeUnselectable: ->
-      @selectable = false
-      _.each @suviews, (view) -> view.makeUnselectable()
 
   App.View.Hand = Backbone.View.extend
     el: '#hand'
@@ -947,8 +937,11 @@ $ ->
     """
     template: (c) -> Mustache.render @__template, c
     initialize: ->
-      _.bindAll this, 'render', 'show', 'hide'
+      _.bindAll this, 'render'
       @subviews = []
+      Backbone.on 'start:action', (id) => @check id, => @$el.show()
+      Backbone.on 'stop:action',  (id) => @check id, => @$el.hide()
+      Backbone.on 'select:player', => @checkPlayer => @$el.show()
     render: ->
       @$el.html @template({})
       @collection.forEach (card) =>
@@ -956,14 +949,13 @@ $ ->
         @$('.cards').append(view.el)
         @subviews.push(view)
       return this
-    show: -> @$el.show()
-    hide: -> @$el.hide()
-    makeSelectable: ->
-      @selectable = true
-      _.each @subviews, (view) -> view.makeSelectable()
-    makeUnselectable: ->
-      @selectable = false
-      _.each @suviews, (view) -> view.makeUnselectable()
+    check: (id, cb) ->
+      if id == DISCARD or id == TREAT_DISEASE or id == DISCOVER_CURE
+        cb?()
+    checkPlayer: (cb) ->
+      action = App.User.get 'currentAction'
+      if action == SHARE_KNOWLEDGE or action == SHARE_RESEARCH_KNOWLEDGE
+        cb?()
 
   App.View.RightPanel = Backbone.View.extend
     el: '#right-panel'
@@ -986,30 +978,19 @@ $ ->
     """
     template: (c) -> Mustache.render @__template, c
     events:
-      'click .action': 'takeAction'
+      'click .action': 'startAction'
     context: -> @model.toJSON()
     initialize: ->
       @user = App.User
     render: ->
       @$el.html @template _.result this, 'context'
       return this
-    takeAction: (e) ->
-      if $(e.currentTarget).hasClass('active')
-        App.ActionListener.actionTaken = false
-        @$('.action').removeClass('active')
-        App.PlayersPanel.hide()
-        App.PlayersPanel.makeUnselectable()
-        App.Hand.hide()
-        App.Hand.makeUnselectable()
-        App.World.makeNodesUnselectable()
-        return
-      else
-        App.ActionListener.actionTaken = true
-        @$('.action').removeClass('active')
-        $(e.currentTarget).toggleClass('active')
-        id = parseInt $(e.currentTarget).data('action'), 10
-        console.log "Taking action #{id}"
-        Backbone.trigger 'rightPanel:actionTaken', id
+    checkIfActing: (cb) ->
+      if not App.User.get 'isActing'
+        cb?()
+    startAction: (e) ->
+      id = parseInt $(e.currentTarget).data('action'), 10
+      @checkIfActing -> Backbone.trigger 'start:action', id
 
   # Backbone.trigger 'increase_infection_rate'
   App.View.InfectionRate = Backbone.View.extend
@@ -1072,66 +1053,77 @@ $ ->
     cure: (color) ->
       @$(".cure.#{color.toUpperCase()}").addClass 'cured'
 
+  App.UIBindings =
+    DRIVE: =>
+    DIRECT_FLIGHT: =>
+    CHARTER_FLIGHT: =>
+    SHUTTLE_FLIGHT: =>
+    PASS: =>
+    DISPATCH: =>
+    BUILD_RESEARCH_CENTER: =>
+    DISCOVER_CURE: =>
+    TREAT_DISEASE: =>
+    SHARE_KNOWLEDGE: =>
+    DISCARD: =>
+    SHARE_RESEARCH_KNOWLEDGE: =>
+
+    # ifActing: (cb) ->
+    #   if App.User.get 'isActing' then cb?()
+    # cityFirst: (cb) ->
+    #   id = App.User.get 'isActing'
+    # citySecond: (cb) ->
+    #   id = App.User.get 'isActing'
+    #   if DRIVE <= id <= SHUTTLE_FLIGHT
+    #     cb?()
+    # cardFirst: (cb) ->
+    #   id = App.User.get 'isActing'
+    #   if DRIVE and
+    # cardSecond: ->
+    # playerFirst: ->
+    #   if id == SHARE_KNOWLEDGE or id == SHARE_RESEARCH_KNOWLEDGE or id == DISPATCH
+    #     cb?()
+    # playerSecond: ->
+
+  # Waits for necessary events from the user before taking an action
   App.View.ActionListener = Backbone.View.extend
     BackboneEvents:
-      'rightPanel:actionTaken': 'rightPanelAction'
-      'city:selected': 'citySelected'
-      'card:selected': 'cardSelected'
-      'player:selected': 'playerSelected'
+      'select:city': 'citySelected'
+      'select:card': 'cardSelected'
+      'select:player': 'playerSelected'
     initialize: ->
       _.bindAll(this)
       _.each @BackboneEvents, (fnname, event) =>
-        Backbone.on event, @[fnname]
+        Backbone.on event, (args...) => App.Checks.ifActing => @[fnname].apply @, args
       @dict =
         destination: null
         cardId: null
-        traderId: null
+        targetId: null
         discardCardId: null
 
-    rightPanelAction: (id) ->
-      console.log "Right panel took action #{id}"
-      if DRIVE <= id <= SHUTTLE_FLIGHT or id == BUILD_RESEARCH_CENTER
-        App.World.makeNodesSelectable()
-
-      if id == PASS
-        App.endTurn()
-
-      if id == SHARE_KNOWLEDGE
-        App.PlayersPanel.show()
-        App.PlayersPanel.makeSelectable()
-
-      if id == DISCARD
-        App.Hand.show()
-        App.Hand.makeSelectable()
-
     citySelected: (id) ->
-      alert "Selected city #{id}"
-      if App.ActionListener.actionTaken = true
-        App.takeAction(id, {destination: id})
-        App.World.makeNodesUnselectable()
-      else
-        App.World.makeNodesUnselectable()
+      console.log "Selected city #{id}"
+      App.Checks.cityFirst id, -> App.takeAction(id, {destination: id})
+      App.Checks.citySecond id, -> App.takeAction(id, {destination: id})
+
     cardSelected: (id) ->
       console.log "Selected card #{id}"
-      if App.ActionListener.actionTaken = true
-        App.takeAction(id, {cardId: id})
-        App.Hand.hide()
-      else
-        App.World.makeCardsUnselectable()
+      @dict.cardId = id
+      App.Checks.cardFirst id, -> App.takeAction(id, @dict)
+      App.Checks.cardSecond id, -> App.takeAction(id, @dict)
+      App.Hand.$el.hide()
+
     playerSelected: (id) ->
       console.log "Selected player #{id}"
-      @dict.traderId = id
-      if App.ActionListener.actionTaken = true
-        App.takeAction(id, {traderId: id})
-        App.PlayersPanel.hide()
-      else
-        App.World.makePlayersUnselectable()
+      @dict.targetId = id
+      App.Checks.playerFirst id, -> App.takeAction(id, {traderId: id})
+      App.Checks.playerSecond id, -> App.takeAction(id, {traderId: id})
+      App.PlayersPanel.$el.hide()
 
     clearSelections: (name) ->
       @dict =
         destination: null
         cardId: null
-        traderId: null
+        targetId: null
         discardCardId: null
 
   #
@@ -1155,17 +1147,22 @@ $ ->
 
       $('#right-panel').toggle()
       $('#right-panel-toggle').click (e) ->
-        # $(e.currentTarget).toggleClass('red')
         $('#right-panel').toggle()
+
 
       $('#hand').toggle()
       $('#hand-toggle').click (e) ->
-        # $(e.currentTarget).toggleClass('red')
-        $('#hand').toggle()
+        if not App.User.get 'isActing'
+          $('#hand').toggle()
+        else
+          alert 'You are in the middle of making a move!'
 
       $('#player-panel').toggle()
       $('#players-toggle').click (e) ->
-        $('#player-panel').toggle()
+        if not App.User.get 'isActing'
+          $('#player-panel').toggle()
+        else
+          alert 'You are in the middle of making a move!'
 
       # World creates a basic graph from
       # cities and updates.
@@ -1188,7 +1185,9 @@ $ ->
       playTurn(data)
 
     takeAction: (actionId, options) ->
-      return App.User.takeAction(actionId, options)
+      returnValue = App.User.takeAction(actionId, options)
+      if returnValue != -1 then Backbone.trigger 'stop:action'
+      returnValue
 
     ################################
 
