@@ -1,4 +1,6 @@
 body {
+  padding: 0;
+  margin: 0;
   font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
 }
 
@@ -6,7 +8,36 @@ a {
   color: #00B7FF;
 }
 
+.panel() {
+  position: absolute;
+  background: white;
+  border: 1px solid #efefef;
+  padding: 10px;
+  margin: 0;
+}
+
+.city {
+  position: absolute;
+  display: block;
+}
+
+.line{
+  transform-origin: 0 100%;
+  height: 3px; /* Line width of 3 */
+  background: #000; /* Black fill */
+}
+
+.sphere {
+  display: block;
+  &.red { background-url:("/images/sphere/red.png");}
+  &.black { background-url:("/images/sphere/black.png"); }
+  &.blue { background-url:("/images/sphere/blue.png"); }
+  &.yellow { background-url:("/images/sphere/yellow.png"); }
+}
+
 #stage {
+  .panel();
+  padding: 0;
   width: 1024px;
   height: 768px;
   background: url("http://clipartist.info/www/COLOURINGBOOK.ORG/Letters/W/world_map_1_coloring_book_colouring-2555px.png");
@@ -14,120 +45,142 @@ a {
   background-repeat: no-repeat;
 }
 
-/*
- * Skeleton
- */
-
-/*
-* Skeleton V1.1
-* Copyright 2011, Dave Gamache
-* www.getskeleton.com
-* Free to use under the MIT license.
-* http://www.opensource.org/licenses/mit-license.php
-* 8/17/2011
-*/
-
-
-/* Table of Contents
-==================================================
-#Base 960 Grid
-#Clearing */
-
-@column: 40px;
-@gutter: 20px;
-@numcolumns:16;
-
-/* #Base 960 Grid
-================================================== */
-
-.container                                  { position: relative; width: (@column+@gutter) * @numcolumns; margin: 0 auto; padding: 0; }
-.container.plusfour                         { width: (@column+@gutter) * (@numcolumns+4); }
-.container.pluseight                        { width: (@column+@gutter) * (@numcolumns+8); }
-.column, .columns                           { float: left; display: inline; margin-left: (@gutter / 2)!important; margin-right: (@gutter / 2)!important; }
-.row                                        { margin-bottom: @gutter; }
-
-/* Nested Column Classes */
-.column.alpha, .columns.alpha               { margin-left: 0!important; }
-.column.omega, .columns.omega               { margin-right: 0!important; }
-.column.alpha.omega,
-.columns.alpha.omega            { margin: 0!important; }
-
-
-.container{
-/* Base Grid */
- .one.column                      { width: @column; }
- .columns{
-  &.two                     { width: @column * 2 + @gutter * 1; }
-  &.three                   { width: @column * 3 + @gutter * 2; }
-  &.four                    { width: @column * 4 + @gutter * 3; }
-  &.five                    { width: @column * 5 + @gutter * 4; }
-  &.six                     { width: @column * 6 + @gutter * 5; }
-  &.seven                   { width: @column * 7 + @gutter * 6; }
-  &.eight                   { width: @column * 8 + @gutter * 7; }
-  &.nine                    { width: @column * 9 + @gutter * 8; }
-  &.ten                     { width: @column * 10 + @gutter * 9; }
-  &.eleven                  { width: @column * 11 + @gutter * 10; }
-  &.twelve                  { width: @column * 12 + @gutter * 11; }
-  &.thirteen                { width: @column * 13 + @gutter * 12; }
-  &.fourteen                { width: @column * 14 + @gutter * 13; }
-  &.fifteen                 { width: @column * 15 + @gutter * 14; }
-  &.sixteen                 { width: @column * 16 + @gutter * 15; }
-  &.twenty                  { width: @column * 20 + @gutter * 20; }
-  &.twentyfour              { width: @column * 24 + @gutter * 23; }
-}
- .one-third.column                { width: ((@column+@gutter) * (@numcolumns - 1)) / 3; }
- .two-thirds.column               { width: ((((@column+@gutter) * (@numcolumns - 1)) / 3) * 2) + @gutter; }
-
-/* Offsets */
- .offset-by-one                   { padding-left: (@column + @gutter) * 1; }
- .offset-by-two                   { padding-left: (@column + @gutter) * 2; }
- .offset-by-three                 { padding-left: (@column + @gutter) * 3; }
- .offset-by-four                  { padding-left: (@column + @gutter) * 4; }
- .offset-by-five                  { padding-left: (@column + @gutter) * 5; }
- .offset-by-six                   { padding-left: (@column + @gutter) * 6; }
- .offset-by-seven                 { padding-left: (@column + @gutter) * 7; }
- .offset-by-eight                 { padding-left: (@column + @gutter) * 8; }
- .offset-by-nine                  { padding-left: (@column + @gutter) * 9; }
- .offset-by-ten                   { padding-left: (@column + @gutter) * 10; }
- .offset-by-eleven                { padding-left: (@column + @gutter) * 11; }
- .offset-by-twelve                { padding-left: (@column + @gutter) * 12; }
- .offset-by-thirteen              { padding-left: (@column + @gutter) * 13; }
- .offset-by-fourteen              { padding-left: (@column + @gutter) * 14; }
- .offset-by-fifteen               { padding-left: (@column + @gutter) * 15; }
+#outbreaks {
+  .panel();
 }
 
+#cures {
+  .panel();
+}
 
-/* #Clearing
-================================================== */
+#right-panel-toggle {
+  position: fixed;
 
-/* Self Clearing Goodness */
-.container:after { content: "\0020"; display: block; height: 0; clear: both; visibility: hidden; }
+}
+#right-panel {
+  position: fixed;
+}
 
-/* Use clearfix class on parent to clear nested columns,
-or wrap each row of columns in a <div class="row"> */
-.clearfix:before,
-.clearfix:after,
-.row:before,
-.row:after {
-  content: '\0020';
-  display: block;
-  overflow: hidden;
-  visibility: hidden;
-  width: 0;
-  height: 0; }
-.row:after,
-.clearfix:after {
-  clear: both; }
-.row,
-.clearfix {
-  zoom: 1; }
-
-/* You can also use a <br class="clear" /> to clear columns */
-.clear {
-  clear: both;
-  display: block;
-  overflow: hidden;
-  visibility: hidden;
-  width: 0;
-  height: 0;
+/*====================================================
+CSS3 Gmail Buttons by Adam Whitcroft
+https://github.com/AdamWhitcroft/CSS3.Gmail.Buttons
+====================================================*/
+/*==================================================*/
+/*  $Basic Button                                   */
+/*==================================================*/
+.bttn {
+  text-decoration:none;
+  cursor:pointer;
+  font-size:0.75em;
+  padding:0 8px;
+  font-weight:bold;
+  height:30px;
+  line-height:30px;
+  display:inline-block;
+  outline:0;
+  color:#444;
+  background-color:#f5f5f5;
+  background-image:-webkit-linear-gradient(top,#f5f5f5,#f1f1f1);
+  background-image:-moz-linear-gradient(top,#f5f5f5,#f1f1f1);
+  background-image:linear-gradient(top,#f5f5f5,#f1f1f1);
+  border:1px solid #d9d9d9;
+  border:1px solid rgba(0,0,0,0.1);
+  -webkit-border-radius:2px;
+  -moz-border-radius:2px;
+  border-radius:2px;
+}
+.bttn:hover {
+  border:1px solid #c6c6c6;
+  border:1px solid rgba(0,0,0,0.2);
+  -webkit-box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  -moz-box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  position:relative;
+  z-index:1;
+}
+.bttn:active {
+  -webkit-box-shadow:inset 0 1px 2px rgba(0,0,0,0.1);
+  -moz-box-shadow:inset 0 1px 2px rgba(0,0,0,0.1);
+  box-shadow:inset 0 1px 2px rgba(0,0,0,0.1);
+}
+/*==================================================*/
+/*  $Emphasis                                       */
+/*==================================================*/
+.emphasis {
+  text-transform:uppercase;
+}
+/*==================================================*/
+/*  $Colors                                         */
+/*==================================================*/
+/* .red */
+.red {
+  color:#fff;
+  background-color:#d14836;
+  border:1px solid transparent;
+  background-image:-webkit-linear-gradient(top,#dd4b39,#d14836);
+  background-image:-moz-linear-gradient(top,#dd4b39,#d14836);
+  background-image:linear-gradient(top,#dd4b39,#d14836);
+}
+.red:hover {
+  background-color:#c53727;
+  border:1px solid #b0281a;
+  background-image:-webkit-linear-gradient(top,#dd4b39,#c53727);
+  background-image:-moz-linear-gradient(top,#dd4b39,#c53727);
+  background-image:linear-gradient(top,#dd4b39,#c53727);
+  -webkit-box-shadow:0 1px 2px rgba(0,0,0,0.2);
+  -moz-box-shadow:0 1px 2px rgba(0,0,0,0.2);
+  box-shadow:0 1px 2px rgba(0,0,0,0.2);
+}
+.red:active {
+  -webkit-box-shadow:inset 0 1px 2px rgba(0,0,0,0.2);
+  -moz-box-shadow:inset 0 1px 2px rgba(0,0,0,0.2);
+  box-shadow:inset 0 1px 2px rgba(0,0,0,0.2);
+}
+/* .blue */
+.blue {
+  color:#fff;
+  background-color:#4D90fe;
+  border:1px solid #3079ed;
+  background-image:-webkit-linear-gradient(top,#4d90fe,#4787ed);
+  background-image:-moz-linear-gradient(top,#4d90fe,#4787ed);
+  background-image:linear-gradient(top,#4d90fe,#4787ed);
+}
+.blue:hover {
+  background-color:#357aeb;
+  border:1px solid #2F5bb7;
+  background-image:-webkit-linear-gradient(top,#4d90fe,#357ae8);
+  background-image:-moz-linear-gradient(top,#4d90fe,#357ae8);
+  background-image:linear-gradient(top,#4d90fe,#357ae8);
+  -webkit-box-shadow:0 1px 2px rgba(0,0,0,0.2);
+  -moz-box-shadow:0 1px 2px rgba(0,0,0,0.2);
+  box-shadow:0 1px 2px rgba(0,0,0,0.2);
+}
+.blue:active {
+  -webkit-box-shadow:inset 0 1px 2px rgba(0,0,0,0.2);
+  -moz-box-shadow:inset 0 1px 2px rgba(0,0,0,0.2);
+  box-shadow:inset 0 1px 2px rgba(0,0,0,0.2);
+}
+/* .yellow */
+.yellow {
+  color:#867343;
+  background-color:#ffe07b;
+  border:1px solid #fddb69;
+  background-image:-webkit-linear-gradient(top,#ffe896,#ffe07b);
+  background-image:-moz-linear-gradient(top,#ffe896,#ffe07b);
+  background-image:linear-gradient(top,#ffe896,#ffe07b);
+}
+.yellow:hover {
+  background-color:#ffda73;
+  border:1px solid #deb74f;
+  background-image:-webkit-linear-gradient(top,#ffe485,#ffda73);
+  background-image:-moz-linear-gradient(top,#ffe485,#ffda73);
+  background-image:linear-gradient(top,#ffe485,#ffda73);
+  -webkit-box-shadow:0 1px 2px rgba(0,0,0,0.2);
+  -moz-box-shadow:0 1px 2px rgba(0,0,0,0.2);
+  box-shadow:0 1px 2px rgba(0,0,0,0.2);
+}
+.yellow:active {
+  -webkit-box-shadow:inset 0 1px 2px rgba(0,0,0,0.2);
+  -moz-box-shadow:inset 0 1px 2px rgba(0,0,0,0.2);
+  box-shadow:inset 0 1px 2px rgba(0,0,0,0.2);
 }

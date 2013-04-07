@@ -7,6 +7,8 @@ var express = require('express')
   , routes = require('./routes')
   , user = require('./routes/user')
   , http = require('http')
+  , coffeescript = require('connect-coffee-script')
+  , connect = require('connect')
   , path = require('path');
 
 var app = express();
@@ -23,7 +25,8 @@ app.configure(function(){
   app.use(express.session());
   app.use(app.router);
   app.use(require('less-middleware')({ src: __dirname + '/public' }));
-  app.use(express.static(path.join(__dirname, 'public')));
+  app.use(coffeescript({src: __dirname + '/public', bare: true }));
+  app.use(express.static(path.join(__dirname,'public')));
 });
 
 app.configure('development', function(){
