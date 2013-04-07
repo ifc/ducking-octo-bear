@@ -29,20 +29,21 @@ a {
   display: block;
   background-repeat: no-repeat;
   background-size: contain;
+  background-color: transparent;
   width: 24px;
   height: 24px;
 }
-.sphere.red {
-  background-url: "/img/sphere/red.png";
+.sphere.RED {
+  background-image: url("/img/spheres/red.png");
 }
-.sphere.black {
-  background-url: "/img/sphere/black.png";
+.sphere.BLACK {
+  background-image: url("/img/spheres/black.png");
 }
-.sphere.blue {
-  background-url: "/img/sphere/blue.png";
+.sphere.BLUE {
+  background-image: url("/img/spheres/blue.png");
 }
-.sphere.yellow {
-  background-url: "/img/sphere/yellow.png";
+.sphere.YELLOW {
+  background-image: url("/img/spheres/yellow.png");
 }
 #stage {
   z-index: 10;
@@ -102,6 +103,9 @@ a {
   bottom: 0;
   left: 682.6666666666666px;
   width: 341.3333333333333px;
+}
+.cityview {
+  position: absolute;
 }
 .card {
   height: 24px;

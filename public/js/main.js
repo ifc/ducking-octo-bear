@@ -92,154 +92,346 @@ $(function() {
   REGIONS = {
     YELLOW: {
       "Los Angeles": {
-        connections: ["Sydney", "San Francisco", "Chicago", "Mexico City"]
+        connections: ["Sydney", "San Francisco", "Chicago", "Mexico City"],
+        css: {
+          top: 30,
+          left: 40
+        }
       },
       "Mexico City": {
-        connections: ["Los Angeles", "Chicago", "Miami", "Bogota", "Lima"]
+        connections: ["Los Angeles", "Chicago", "Miami", "Bogota", "Lima"],
+        css: {
+          top: 50,
+          left: 60
+        }
       },
       Miami: {
-        connections: ["Mexico City", "Atlanta", "Washington", "Bogota"]
+        connections: ["Mexico City", "Atlanta", "Washington", "Bogota"],
+        css: {
+          top: 30,
+          left: 40
+        }
       },
       Bogota: {
-        connections: ["Mexico City", "Miami", "Sao Paulo", "Buenos Aires", "Lima"]
+        connections: ["Mexico City", "Miami", "Sao Paulo", "Buenos Aires", "Lima"],
+        css: {
+          top: 30,
+          left: 40
+        }
       },
       Lima: {
-        connections: ["Mexico City", "Bogota", "Santiago"]
+        connections: ["Mexico City", "Bogota", "Santiago"],
+        css: {
+          top: 30,
+          left: 40
+        }
       },
       Santiago: {
-        connections: ["Lima"]
+        connections: ["Lima"],
+        css: {
+          top: 30,
+          left: 40
+        }
       },
       "Buenos Aires": {
-        connections: ["Bogota", "Sao Paulo"]
+        connections: ["Bogota", "Sao Paulo"],
+        css: {
+          top: 30,
+          left: 40
+        }
       },
       "Sao Paulo": {
-        connections: ["Bogota", "Madrid", "Lagos", "Buenos Aires"]
+        connections: ["Bogota", "Madrid", "Lagos", "Buenos Aires"],
+        css: {
+          top: 30,
+          left: 40
+        }
       },
       Lagos: {
-        connections: ["Sao Paulo", "Khartoum", "Kinshasa"]
+        connections: ["Sao Paulo", "Khartoum", "Kinshasa"],
+        css: {
+          top: 30,
+          left: 40
+        }
       },
       Khartoum: {
-        connections: ["Lagos", "Cairo", "Johannesburg", "Kinshasa"]
+        connections: ["Lagos", "Cairo", "Johannesburg", "Kinshasa"],
+        css: {
+          top: 30,
+          left: 40
+        }
       },
       Kinshasa: {
-        connections: ["Lagos", "Khartoum", "Johannesburg"]
+        connections: ["Lagos", "Khartoum", "Johannesburg"],
+        css: {
+          top: 30,
+          left: 40
+        }
       },
       Johannesburg: {
-        connections: ["Kinshasa", "Khartoum"]
+        connections: ["Kinshasa", "Khartoum"],
+        css: {
+          top: 30,
+          left: 40
+        }
       }
     },
     BLACK: {
       Moscow: {
-        connections: ["Tehran", "Istanbul", "St. Petersburg"]
+        connections: ["Tehran", "Istanbul", "St. Petersburg"],
+        css: {
+          top: 30,
+          left: 40
+        }
       },
       Tehran: {
-        connections: ["Moscow", "Baghdad", "Karachi", "Delhi"]
+        connections: ["Moscow", "Baghdad", "Karachi", "Delhi"],
+        css: {
+          top: 30,
+          left: 40
+        }
       },
       Istanbul: {
-        connections: ["St. Petersburg", "Moscow", "Milan", "Baghdad", "Algiers", "Cairo"]
+        connections: ["St. Petersburg", "Moscow", "Milan", "Baghdad", "Algiers", "Cairo"],
+        css: {
+          top: 30,
+          left: 40
+        }
       },
       Delhi: {
-        connections: ["Tehran", "Karachi", "Kolkata", "Mumbai", "Chennai"]
+        connections: ["Tehran", "Karachi", "Kolkata", "Mumbai", "Chennai"],
+        css: {
+          top: 30,
+          left: 40
+        }
       },
       Baghdad: {
-        connections: ["Tehran", "Istanbul", "Karachi", "Cairo", "Riyadh"]
+        connections: ["Tehran", "Istanbul", "Karachi", "Cairo", "Riyadh"],
+        css: {
+          top: 30,
+          left: 40
+        }
       },
       Karachi: {
-        connections: ["Tehran", "Delhi", "Baghdad", "Riyadh", "Mumbai"]
+        connections: ["Tehran", "Delhi", "Baghdad", "Riyadh", "Mumbai"],
+        css: {
+          top: 30,
+          left: 40
+        }
       },
       Kolkata: {
-        connections: ["Delhi", "Chennai", "Bangkok", "Hong Kong"]
+        connections: ["Delhi", "Chennai", "Bangkok", "Hong Kong"],
+        css: {
+          top: 30,
+          left: 40
+        }
       },
       Algiers: {
-        connections: ["Madrid", "Paris", "Istanbul", "Cairo"]
+        connections: ["Madrid", "Paris", "Istanbul", "Cairo"],
+        css: {
+          top: 30,
+          left: 40
+        }
       },
       Cairo: {
-        connections: ["Algiers", "Istanbul", "Baghdad", "Riyadh", "Khartoum"]
+        connections: ["Algiers", "Istanbul", "Baghdad", "Riyadh", "Khartoum"],
+        css: {
+          top: 30,
+          left: 40
+        }
       },
       Riyadh: {
-        connections: ["Cairo", "Baghdad", "Karachi"]
+        connections: ["Cairo", "Baghdad", "Karachi"],
+        css: {
+          top: 30,
+          left: 40
+        }
       },
       Mumbai: {
-        connections: ["Karachi", "Delhi", "Chennai"]
+        connections: ["Karachi", "Delhi", "Chennai"],
+        css: {
+          top: 30,
+          left: 40
+        }
       },
       Chennai: {
-        connections: ["Mumbai", "Delhi", "Kolkata", "Bangkok", "Jakarta"]
+        connections: ["Mumbai", "Delhi", "Kolkata", "Bangkok", "Jakarta"],
+        css: {
+          top: 30,
+          left: 40
+        }
       }
     },
     RED: {
       Beijing: {
-        connections: ["Shanghai", "Seoul"]
+        connections: ["Shanghai", "Seoul"],
+        css: {
+          top: 30,
+          left: 40
+        }
       },
       Seoul: {
-        connections: ["Beijing", "Shanghai", "Tokyo"]
+        connections: ["Beijing", "Shanghai", "Tokyo"],
+        css: {
+          top: 30,
+          left: 40
+        }
       },
       Tokyo: {
-        connections: ["Shanghai", "Seoul", "Osaka", "San Francisco"]
+        connections: ["Shanghai", "Seoul", "Osaka", "San Francisco"],
+        css: {
+          top: 30,
+          left: 40
+        }
       },
       Shanghai: {
-        connections: ["Beijing", "Seoul", "Tokyo", "Taipei", "Hong Kong"]
+        connections: ["Beijing", "Seoul", "Tokyo", "Taipei", "Hong Kong"],
+        css: {
+          top: 30,
+          left: 40
+        }
       },
       Osaka: {
-        connections: ["Tokyo", "Taipei"]
+        connections: ["Tokyo", "Taipei"],
+        css: {
+          top: 30,
+          left: 40
+        }
       },
       Taipei: {
-        connections: ["Shanghai", "Osaka", "Hong Kong", "Manila"]
+        connections: ["Shanghai", "Osaka", "Hong Kong", "Manila"],
+        css: {
+          top: 30,
+          left: 40
+        }
       },
       "Hong Kong": {
-        connections: ["Kolkata", "Shanghai", "Taipei", "Manila", "Ho Chi Minh City", "Bangkok"]
+        connections: ["Kolkata", "Shanghai", "Taipei", "Manila", "Ho Chi Minh City", "Bangkok"],
+        css: {
+          top: 30,
+          left: 40
+        }
       },
       Bangkok: {
-        connections: ["Kolkata", "Chennai", "Hong Kong", "Ho Chi Minh City", "Jakarta"]
+        connections: ["Kolkata", "Chennai", "Hong Kong", "Ho Chi Minh City", "Jakarta"],
+        css: {
+          top: 30,
+          left: 40
+        }
       },
       "Ho Chi Minh City": {
-        connections: ["Jakarta", "Bangkok", "Hong Kong", "Manila"]
+        connections: ["Jakarta", "Bangkok", "Hong Kong", "Manila"],
+        css: {
+          top: 30,
+          left: 40
+        }
       },
       Manila: {
-        connections: ["Ho Chi Minh City", "Hong Kong", "Taipei", "San Francisco", "Sydney"]
+        connections: ["Ho Chi Minh City", "Hong Kong", "Taipei", "San Francisco", "Sydney"],
+        css: {
+          top: 30,
+          left: 40
+        }
       },
       Jakarta: {
-        connections: ["Chennai", "Bangkok", "Ho Chi Minh City", "Sydney"]
+        connections: ["Chennai", "Bangkok", "Ho Chi Minh City", "Sydney"],
+        css: {
+          top: 30,
+          left: 40
+        }
       },
       Sydney: {
-        connections: ["Jakarta", "Manila", "Los Angeles"]
+        connections: ["Jakarta", "Manila", "Los Angeles"],
+        css: {
+          top: 30,
+          left: 40
+        }
       }
     },
     BLUE: {
       "San Francisco": {
-        connections: ["Tokyo", "Manila", "Chicago", "Los Angeles"]
+        connections: ["Tokyo", "Manila", "Chicago", "Los Angeles"],
+        css: {
+          top: 30,
+          left: 40
+        }
       },
       Chicago: {
-        connections: ["San Francisco", "Los Angeles", "Mexico City", "Atlanta", "Toronto"]
+        connections: ["San Francisco", "Los Angeles", "Mexico City", "Atlanta", "Toronto"],
+        css: {
+          top: 30,
+          left: 40
+        }
       },
       Toronto: {
-        connections: ["Chicago", "New York", "Washington"]
+        connections: ["Chicago", "New York", "Washington"],
+        css: {
+          top: 30,
+          left: 40
+        }
       },
       "New York": {
-        connections: ["Toronto", "Washington", "London", "Madrid"]
+        connections: ["Toronto", "Washington", "London", "Madrid"],
+        css: {
+          top: 30,
+          left: 40
+        }
       },
       Washington: {
-        connections: ["Atlanta", "Toronto", "New York", "Miami"]
+        connections: ["Atlanta", "Toronto", "New York", "Miami"],
+        css: {
+          top: 30,
+          left: 40
+        }
       },
       Atlanta: {
-        connections: ["Chicago", "Washington", "Miami"]
+        connections: ["Chicago", "Washington", "Miami"],
+        css: {
+          top: 30,
+          left: 40
+        }
       },
       London: {
-        connections: ["New York", "Essen", "Madrid", "Paris"]
+        connections: ["New York", "Essen", "Madrid", "Paris"],
+        css: {
+          top: 30,
+          left: 40
+        }
       },
       Essen: {
-        connections: ["London", "Paris", "Milan", "St. Petersburg"]
+        connections: ["London", "Paris", "Milan", "St. Petersburg"],
+        css: {
+          top: 30,
+          left: 40
+        }
       },
       "St. Petersburg": {
-        connections: ["Essen", "Istanbul", "Moscow"]
+        connections: ["Essen", "Istanbul", "Moscow"],
+        css: {
+          top: 30,
+          left: 40
+        }
       },
       Madrid: {
-        connections: ["New York", "London", "Paris", "Sao Paulo", "Algiers"]
+        connections: ["New York", "London", "Paris", "Sao Paulo", "Algiers"],
+        css: {
+          top: 30,
+          left: 40
+        }
       },
       Paris: {
-        connections: ["Madrid", "London", "Essen", "Milan", "Algiers"]
+        connections: ["Madrid", "London", "Essen", "Milan", "Algiers"],
+        css: {
+          top: 30,
+          left: 40
+        }
       },
       Milan: {
-        connections: ["Paris", "Essen", "Istanbul"]
+        connections: ["Paris", "Essen", "Istanbul"],
+        css: {
+          top: 30,
+          left: 40
+        }
       }
     }
   };
@@ -249,17 +441,16 @@ $(function() {
 
       this.Regions = options.Regions;
       this.Cities = {};
-      _.each(this.Regions, function(Region, Color) {
+      return _.each(this.Regions, function(Region, Color) {
         return _.each(Region, function(obj, name) {
           var City;
 
           City = new App.Model.City(obj);
-          City.set('color', Color.toLowerCase());
+          City.set('color', Color);
           City.set('name', name);
           return _this.Cities[name] = City;
         });
       });
-      return console.log(this.Cities);
     },
     initGraph: function() {
       var _this = this;
@@ -273,6 +464,7 @@ $(function() {
           model: City
         });
         $('#stage').append(view.render().el);
+        view.setPosition();
         return _this.CityViews.push(view);
       });
     }
@@ -305,9 +497,6 @@ $(function() {
       var connections;
 
       connections = _.map(this.get("connections"), function(name) {
-        if (App.World.Cities[name] === void 0) {
-          console.log(name);
-        }
         return App.World.Cities[name];
       });
       this.set("connections", connections);
@@ -334,8 +523,10 @@ $(function() {
     },
     render: function() {
       this.$el.html(this.template(_.result(this, 'context')));
-      console.log(this.$el);
       return this;
+    },
+    setPosition: function() {
+      return this.$el.css(this.model.get('css'));
     },
     context: function() {
       return this.model.toJSON();
