@@ -75,7 +75,6 @@ $ ->
   TREAT_DISEASE         = 9
   SHARE_KNOWLEDGE       = 10
 
-
   curedDiseases = []
   infection =
     location: 1
@@ -492,17 +491,17 @@ $ ->
     __template: """
       <ul class="actions">
         <li class="label"><h4>Movement</h4></li>
-        <li class="action first" data-action="DRIVE">Drive</li>
-        <li class="action" data-action="DIRECT_FLIGHT">Direct Flight</li>
-        <li class="action" data-action="CHARTER_FLIGHT">Charter Flight</li>
-        <li class="action" data-action="SHUTTLE_FLIGHT">Shuttle Flight</li>
-        <li class="action" data-action="PASS">Pass</li>
+        <li class="action first" data-action="1">Drive</li>
+        <li class="action" data-action="2">Direct Flight</li>
+        <li class="action" data-action="3">Charter Flight</li>
+        <li class="action" data-action="4">Shuttle Flight</li>
+        <li class="action" data-action="5">Pass</li>
         <li class="label"><h4>Special Actions</h4></li>
-        <li class="action first" data-action="DISPATCH">Dispatch</li>
-        <li class="action" data-action="BUILD_RESEARCH_CENTER">Build Research Center</li>
-        <li class="action" data-action="DISCOVER_CURE">Discover Cure</li>
-        <li class="action" data-action="TREAT_DISEASE">Treat Disease</li>
-        <li class="action" data-action="SHARE_KNOWLEDGE">Share Knowledge</li>
+        <li class="action first" data-action="6">Dispatch</li>
+        <li class="action" data-action="7">Build Research Center</li>
+        <li class="action" data-action="8">Discover Cure</li>
+        <li class="action" data-action="9">Treat Disease</li>
+        <li class="action" data-action="10">Share Knowledge</li>
       </ul>
     """
     template: (c) -> Mustache.render @__template, c
