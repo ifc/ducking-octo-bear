@@ -75,11 +75,11 @@ $ ->
   SHARE_KNOWLEDGE       = 10
 
   curedDiseases = []
-  infection =
+  infection = #?????????????????????????????
     location: 1
     disease: RED
 
-  researchCenter =
+  researchCenter = #?????????????????????
     location: 1
     disease: BLUE
 
@@ -401,6 +401,7 @@ $ ->
 
   App.Model.World = Backbone.Model.extend
     initialize: (options) ->
+      @set('curedDiseases', [])
       @Regions = options.Regions
       @Cities = {}
       _.each @Regions, (Region, Color) =>
@@ -510,8 +511,8 @@ $ ->
 
       return ret
 
-
     # TODO: if eradicated -> then all.
+    # Medic cole complete.
     treatDisease: ->
       ret = 0
       curLocation = @get('location')
@@ -524,6 +525,47 @@ $ ->
       else
         alert("Treating a city with no disease?")
         ret = -1
+
+      return ret
+
+
+    # TODO: given 'selected' cards.
+    # Scientist role complete.
+    discoverCure: (targetColor) ->
+      ret = -1
+      curLocation = @get('location')
+      targetColor = targetColor.toUpperCase()
+      numCardsOfColor = 0
+
+      # Make sure we are on at a research center.
+      if not curLocation.hasResearchCenter()
+        alert("Current location must have a research center to discover a cure!")
+        return -1
+
+      if color in App.World.get('curedDiseases')
+        alert("Already discovered a cure for this color!")
+        return -1
+
+      # Count the number of cards there are of this color.
+      myCards = @get('cards')
+      for card in myCards
+        if card.get('color') == targetColor
+          numCardsOfColor = numCardsOfColor + 1
+
+      minNumCards = if @get('role') == 'scientist' then 4 else 5
+      if numCardsOfColor >= minNumCards
+        cardsToRemove = minNumCards
+
+        # Remove cards.
+        for card in myCards
+          if card.get('color') == targetColor and cardsToRemove >= 0
+            myCards.remove(card)
+            cardsToRemove = cardsToRemove - 1
+
+        # Cure the disease
+        App.World.get('curedDiseases').push(color)
+
+        ret = 0
 
       return ret
 
@@ -548,7 +590,7 @@ $ ->
       else if actionId == BUILD_RESEARCH_CENTER
         ret = @buildResearchCenter()
       else if actionId == DISCOVER_CURE
-        # TODO
+        ret = @discoverCure(options['color'])
       else if actionId == TREAT_DISEASE
         ret = @treatDisease()
       else if actionId == SHARE_KNOWLEDGE

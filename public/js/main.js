@@ -441,6 +441,7 @@ $(function() {
     initialize: function(options) {
       var _this = this;
 
+      this.set('curedDiseases', []);
       this.Regions = options.Regions;
       this.Cities = {};
       return _.each(this.Regions, function(Region, Color) {
@@ -595,6 +596,43 @@ $(function() {
       }
       return ret;
     },
+    discoverCure: function(targetColor) {
+      var card, cardsToRemove, curLocation, minNumCards, myCards, numCardsOfColor, ret, _i, _j, _len, _len1;
+
+      ret = -1;
+      curLocation = this.get('location');
+      targetColor = targetColor.toUpperCase();
+      numCardsOfColor = 0;
+      if (!curLocation.hasResearchCenter()) {
+        alert("Current location must have a research center to discover a cure!");
+        return -1;
+      }
+      if (__indexOf.call(App.World.get('curedDiseases'), color) >= 0) {
+        alert("Already discovered a cure for this color!");
+        return -1;
+      }
+      myCards = this.get('cards');
+      for (_i = 0, _len = myCards.length; _i < _len; _i++) {
+        card = myCards[_i];
+        if (card.get('color') === targetColor) {
+          numCardsOfColor = numCardsOfColor + 1;
+        }
+      }
+      minNumCards = this.get('role') === 'scientist' ? 4 : 5;
+      if (numCardsOfColor >= minNumCards) {
+        cardsToRemove = minNumCards;
+        for (_j = 0, _len1 = myCards.length; _j < _len1; _j++) {
+          card = myCards[_j];
+          if (card.get('color') === targetColor && cardsToRemove >= 0) {
+            myCards.remove(card);
+            cardsToRemove = cardsToRemove - 1;
+          }
+        }
+        App.World.get('curedDiseases').push(color);
+        ret = 0;
+      }
+      return ret;
+    },
     takeAction: function(actionId, options) {
       var ret;
 
@@ -614,7 +652,7 @@ $(function() {
       } else if (actionId === BUILD_RESEARCH_CENTER) {
         ret = this.buildResearchCenter();
       } else if (actionId === DISCOVER_CURE) {
-
+        ret = this.discoverCure(options['color']);
       } else if (actionId === TREAT_DISEASE) {
         ret = this.treatDisease();
       } else if (actionId === SHARE_KNOWLEDGE) {
