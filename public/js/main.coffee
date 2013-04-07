@@ -111,293 +111,293 @@ $ ->
       "Los Angeles":
         connections: ["Sydney", "San Francisco", "Chicago", "Mexico City"]
         css:
-          top: 280
-          left: 155
+          top: 310
+          left: 175
 
       "Mexico City":
         connections: ["Los Angeles", "Chicago", "Miami", "Bogota", "Lima"]
         css:
-          top: 305
-          left: 205
+          top: 360
+          left: 240
 
       Miami:
         connections: ["Mexico City", "Atlanta", "Washington", "Bogota"]
         css:
-          top: 268
-          left: 270
+          top: 320
+          left: 320
 
       Bogota:
         connections: ["Mexico City", "Miami", "Sao Paulo", "Buenos Aires", "Lima"]
         css:
-          top: 320
-          left: 275
+          top: 388
+          left: 323
 
       Lima:
         connections: ["Mexico City", "Bogota", "Santiago"]
         css:
-          top: 380
-          left: 260
+          top: 445
+          left: 300
 
       Santiago:
         connections: ["Lima"]
         css:
-          top: 30
-          left: 40
+          top: 510
+          left: 320
 
       "Buenos Aires":
         connections: ["Bogota", "Sao Paulo"]
         css:
-          top: 455
-          left: 330
+          top: 525
+          left: 385
 
       "Sao Paulo":
         connections: ["Bogota", "Madrid", "Lagos", "Buenos Aires"]
         css:
-          top: 30
-          left: 40
+          top: 475
+          left: 430
 
       Lagos:
         connections: ["Sao Paulo", "Khartoum", "Kinshasa"]
         css:
-          top: 30
-          left: 40
+          top: 380
+          left: 560
 
       Khartoum:
         connections: ["Lagos", "Cairo", "Johannesburg", "Kinshasa"]
         css:
-          top: 30
-          left: 40
+          top: 395
+          left: 655
 
       Kinshasa:
         connections: ["Lagos", "Khartoum", "Johannesburg"]
         css:
-          top: 30
-          left: 40
+          top: 445
+          left: 600
 
       Johannesburg:
         connections: ["Kinshasa", "Khartoum"]
         css:
-          top: 30
-          left: 40
+          top: 500
+          left: 635
 
     BLACK:
       Moscow:
         connections: ["Tehran", "Istanbul", "St. Petersburg"]
         css:
-          top: 30
-          left: 40
+          top: 180
+          left: 710
 
       Tehran:
         connections: ["Moscow", "Baghdad", "Karachi", "Delhi"]
         css:
-          top: 30
-          left: 40
+          top: 240
+          left: 750
 
       Istanbul:
         connections: ["St. Petersburg", "Moscow", "Milan", "Baghdad", "Algiers", "Cairo"]
         css:
-          top: 30
-          left: 40
+          top: 246
+          left: 655
 
       Delhi:
         connections: ["Tehran", "Karachi", "Kolkata", "Mumbai", "Chennai"]
         css:
-          top: 30
-          left: 40
+          top: 290
+          left: 810
 
       Baghdad:
         connections: ["Tehran", "Istanbul", "Karachi", "Cairo", "Riyadh"]
         css:
-          top: 30
-          left: 40
+          top: 290
+          left: 695
 
       Karachi:
         connections: ["Tehran", "Delhi", "Baghdad", "Riyadh", "Mumbai"]
         css:
-          top: 30
-          left: 40
+          top: 310
+          left: 750
 
       Kolkata:
         connections: ["Delhi", "Chennai", "Bangkok", "Hong Kong"]
         css:
-          top: 30
-          left: 40
+          top: 320
+          left: 860
 
       Algiers:
         connections: ["Madrid", "Paris", "Istanbul", "Cairo"]
         css:
-          top: 30
-          left: 40
+          top: 310
+          left: 575
 
       Cairo:
         connections: ["Algiers", "Istanbul", "Baghdad", "Riyadh", "Khartoum"]
         css:
-          top: 30
-          left: 40
+          top: 340
+          left: 630
 
       Riyadh:
         connections: ["Cairo", "Baghdad", "Karachi"]
         css:
-          top: 30
-          left: 40
+          top: 360
+          left: 710
 
       Mumbai:
         connections: ["Karachi", "Delhi", "Chennai"]
         css:
-          top: 30
-          left: 40
+          top: 360
+          left: 780
 
       Chennai:
         connections: ["Mumbai", "Delhi", "Kolkata", "Bangkok", "Jakarta"]
         css:
-          top: 30
-          left: 40
+          top: 400
+          left: 820
 
     RED:
       Beijing:
         connections: ["Shanghai", "Seoul"]
         css:
-          top: 30
-          left: 40
+          top: 210
+          left: 895
 
       Seoul:
         connections: ["Beijing", "Shanghai", "Tokyo"]
         css:
-          top: 30
-          left: 40
+          top: 220
+          left: 960
 
       Tokyo:
         connections: ["Shanghai", "Seoul", "Osaka", "San Francisco"]
         css:
-          top: 30
-          left: 40
+          top: 240
+          left: 1020
 
       Shanghai:
         connections: ["Beijing", "Seoul", "Tokyo", "Taipei", "Hong Kong"]
         css:
-          top: 30
-          left: 40
+          top: 285
+          left: 900
 
       Osaka:
         connections: ["Tokyo", "Taipei"]
         css:
-          top: 30
-          left: 40
+          top: 290
+          left: 1015
 
       Taipei:
         connections: ["Shanghai", "Osaka", "Hong Kong", "Manila"]
         css:
-          top: 30
-          left: 40
+          top: 320
+          left: 965
 
       "Hong Kong":
         connections: ["Kolkata", "Shanghai", "Taipei", "Manila", "Ho Chi Minh City", "Bangkok"]
         css:
-          top: 30
-          left: 40
+          top: 340
+          left: 910
 
       Bangkok:
         connections: ["Kolkata", "Chennai", "Hong Kong", "Ho Chi Minh City", "Jakarta"]
         css:
-          top: 30
-          left: 40
+          top: 385
+          left: 875
 
       "Ho Chi Minh City":
         connections: ["Jakarta", "Bangkok", "Hong Kong", "Manila"]
         css:
-          top: 30
-          left: 40
+          top: 410
+          left: 930
 
       Manila:
         connections: ["Ho Chi Minh City", "Hong Kong", "Taipei", "San Francisco", "Sydney"]
         css:
-          top: 30
-          left: 40
+          top: 400
+          left: 1000
 
       Jakarta:
         connections: ["Chennai", "Bangkok", "Ho Chi Minh City", "Sydney"]
         css:
-          top: 30
-          left: 40
+          top: 450
+          left: 880
 
       Sydney:
         connections: ["Jakarta", "Manila", "Los Angeles"]
         css:
-          top: 30
-          left: 40
+          top: 530
+          left: 1040
 
     BLUE:
       "San Francisco":
         connections: ["Tokyo", "Manila", "Chicago", "Los Angeles"]
         css:
-          top: 222
-          left: 135
+          top: 255
+          left: 160
 
       Chicago:
         connections: ["San Francisco", "Los Angeles", "Mexico City", "Atlanta", "Toronto"]
         css:
-          top: 30
-          left: 40
+          top: 210
+          left: 250
 
       Toronto:
         connections: ["Chicago", "New York", "Washington"]
         css:
-          top: 30
-          left: 40
+          top: 200
+          left: 315
 
       "New York":
         connections: ["Toronto", "Washington", "London", "Madrid"]
         css:
-          top: 30
-          left: 40
+          top: 240
+          left: 400
 
       Washington:
         connections: ["Atlanta", "Toronto", "New York", "Miami"]
         css:
-          top: 30
-          left: 40
+          top: 280	
+          left: 360
 
       Atlanta:
         connections: ["Chicago", "Washington", "Miami"]
         css:
-          top: 30
-          left: 40
+          top: 270
+          left: 285
 
       London:
         connections: ["New York", "Essen", "Madrid", "Paris"]
         css:
-          top: 30
-          left: 40
+          top: 165
+          left: 510
 
       Essen:
         connections: ["London", "Paris", "Milan", "St. Petersburg"]
         css:
-          top: 30
-          left: 40
+          top: 152
+          left: 573
 
       "St. Petersburg":
         connections: ["Essen", "Istanbul", "Moscow"]
         css:
-          top: 30
-          left: 40
+          top: 140
+          left: 675
 
       Madrid:
         connections: ["New York", "London", "Paris", "Sao Paulo", "Algiers"]
         css:
-          top: 30
-          left: 40
+          top: 280
+          left: 500
 
       Paris:
         connections: ["Madrid", "London", "Essen", "Milan", "Algiers"]
         css:
-          top: 30
-          left: 40
+          top: 213
+          left: 560
 
       Milan:
         connections: ["Paris", "Essen", "Istanbul"]
         css:
-          top: 30
-          left: 40
+          top: 205
+          left: 605
 
   App.Model.World = Backbone.Model.extend
     initialize: (options) ->
